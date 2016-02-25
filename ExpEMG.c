@@ -31,6 +31,21 @@ int main(void) {
 		return 1;;
 	}
 
+	// claim all the needed interfaces for AInScan
+	for (i = 1; i <= 3; i++) {
+		ret = libusb_detach_kernel_driver(udev, i);
+		if (ret < 0) {
+			fprintf(stderr, "Can't detach kernel from interface");
+			usbReset_USB1408FS(udev);
+			exit(-1);
+		}
+		ret = libusb_claim_interface(udev, i);
+		if (ret < 0) {
+			fprintf(stderr, "Can't claim interface.");
+			exit(-1);
+		}
+	}
+
 	usbDConfigPort_USB1408FS(udev, DIO_PORTA, DIO_DIR_OUT);
 	usbDConfigPort_USB1408FS(udev, DIO_PORTB, DIO_DIR_IN);
 	usbDOut_USB1408FS(udev, DIO_PORTA, 0);
@@ -52,7 +67,7 @@ int main(void) {
 		}
 
 		gettimeofday(&start, NULL);
-		usbAInScan_USB1408FS_SE(udev, 0, 7, count, &freq, options, in_data);
+		usbAInScan_USB1408FS_SE(udev, 0, 0, count, &freq, options, in_data);
 		gettimeofday(&end, NULL);
 
 		printf("Time Read Took: %f\n", (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001);
