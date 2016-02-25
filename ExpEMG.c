@@ -53,7 +53,7 @@ int main(void) {
 
 	fprintf(stderr, "Scanning data!\n");
 
-	float freq = 8000;
+	float freq = 8192;
 	int count = 200;
 	uint8_t options = AIN_EXECUTION | AIN_GAIN_QUEUE;
 	signed short in_data[200];
