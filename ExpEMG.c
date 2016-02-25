@@ -3,7 +3,7 @@
  *
  * Compile with:
  *
- * gcc -g -Wall -I. -o ExpEMG ExpEMG.c -L. -lmccusb  -lm -L/usr/local/lib -lhidapi-libusb -lusb-1.0
+ * gcc -g -std=gnu99 -Wall -I. -o ExpEMG ExpEMG.c -L. -lmccusb  -lm -L/usr/local/lib -lhidapi-libusb -lusb-1.0
  */
 
 #include <stdlib.h>
@@ -35,21 +35,16 @@ int main(void) {
 	usbDOut_USB1408FS(udev, DIO_PORTA, 0);
 	usbDOut_USB1408FS(udev, DIO_PORTA, 0);
 
-//	fprintf(stderr, "Starting blink!\n");
-//	usbBlink_USB1408FS(udev);
-//	sleep(4);
-//	fprintf(stderr, "Blink completed!\n");
-
 	fprintf(stderr, "Scanning data!\n");
 
-	sleep(2);
-
-	float freq = 1000;
+	float freq = 8000;
 	int count = 200;
 	uint8_t options = AIN_EXECUTION | AIN_GAIN_QUEUE;
 	signed short in_data[200];
 
 	for (int reads = 0; reads < 5; reads++) {
+		usbAInStop_USB1408FS(udev);
+
 		for (int i = 0; i < 200; i++) {
 			in_data[i] = 9;
 		}
@@ -61,6 +56,7 @@ int main(void) {
 			}
 			printf("\n");
 		}
+		printf("\n");
 	}
 
 
@@ -74,7 +70,6 @@ int main(void) {
 		libusb_release_interface(udev, i);
 	}
 	libusb_close(udev);
-
 
 	return 1;
 }
