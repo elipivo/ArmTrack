@@ -70,7 +70,7 @@ int main(void) {
 		usbAInScan_USB1408FS_SE(udev, 0, 0, count, &freq, options, in_data);
 		gettimeofday(&end, NULL);
 
-		printf("Time Read Took: %f\n", (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001);
+		printf("%f\n", (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001);
 //		for (int i = 0; i < 25; i++) {
 //			printf("Read %i:   ", i + 1);
 //			for (int j = 0; j < 8; j++) {
