@@ -59,7 +59,7 @@ int main(void) {
 	signed short in_data[200];
 	struct timeval start, end;
 
-	for (int reads = 0; reads < 5; reads++) {
+	for (int reads = 0; reads < 2500; reads++) {
 		usbAInStop_USB1408FS(udev);
 
 		for (int i = 0; i < 200; i++) {
@@ -71,14 +71,14 @@ int main(void) {
 		gettimeofday(&end, NULL);
 
 		printf("Time Read Took: %f\n", (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001);
-		for (int i = 0; i < 25; i++) {
-			printf("Read %i:   ", i + 1);
-			for (int j = 0; j < 8; j++) {
-				printf("%.2fV   ", volts_1408FS_SE(in_data[i * 8 + j]));
-			}
-			printf("\n");
-		}
-		printf("\n");
+//		for (int i = 0; i < 25; i++) {
+//			printf("Read %i:   ", i + 1);
+//			for (int j = 0; j < 8; j++) {
+//				printf("%.2fV   ", volts_1408FS_SE(in_data[i * 8 + j]));
+//			}
+//			printf("\n");
+//		}
+//		printf("\n");
 	}
 
 
