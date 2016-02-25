@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "/home/pi/mcc-libusb/pmd.h"
 #include "/home/pi/mcc-libusb/usb-1408FS.h"
@@ -41,6 +42,7 @@ int main(void) {
 	int count = 200;
 	uint8_t options = AIN_EXECUTION | AIN_GAIN_QUEUE;
 	signed short in_data[200];
+	struct timeval start, end;
 
 	for (int reads = 0; reads < 5; reads++) {
 		usbAInStop_USB1408FS(udev);
@@ -48,7 +50,12 @@ int main(void) {
 		for (int i = 0; i < 200; i++) {
 			in_data[i] = 9;
 		}
+
+		gettimeofday(&start, NULL);
 		usbAInScan_USB1408FS_SE(udev, 0, 7, count, &freq, options, in_data);
+		gettimeofday(&end, NULL);
+
+		fprintf(outFile, "Time Read Took: %f\n", (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001);
 		for (int i = 0; i < 25; i++) {
 			printf("Read %i:   ", i + 1);
 			for (int j = 0; j < 8; j++) {
