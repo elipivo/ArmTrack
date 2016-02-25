@@ -32,7 +32,7 @@ int main(void) {
 	}
 
 	// claim all the needed interfaces for AInScan
-	for (i = 1; i <= 3; i++) {
+	for (int i = 1; i <= 3; i++) {
 		ret = libusb_detach_kernel_driver(udev, i);
 		if (ret < 0) {
 			fprintf(stderr, "Can't detach kernel from interface");
