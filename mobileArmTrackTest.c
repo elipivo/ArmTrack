@@ -414,7 +414,9 @@ void getData() {
 	}
 	fprintf(stderr, "Here f");
 	if (data.Force.id != -1) {
+		fprintf(stderr, "Here f1");
 		while (data.controlValues[2] != 2) {}
+		fprintf(stderr, "Here f2");
 	}
 	fprintf(stderr, "Here g");
 	if (data.EMG.id != -1) {
