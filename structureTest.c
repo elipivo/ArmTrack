@@ -85,7 +85,7 @@ int main(void) {
 	flags = fcntl(fileno(stdin), F_SETFL, flags);
 	char userInput;
 
-	setPriority();
+//	setPriority();
 
 	fprintf(stderr, "Connecting to sensors.\n");
 
@@ -162,14 +162,10 @@ void setPriority() {
 
 void startSensors() {
 
-	fprintf(stderr, "Here 0");
-
 	closeQuickDevice(&data.IMU);
 	closeQuickDevice(&data.CyGl);
 	closeQuickDevice(&data.Force);
 	closeSlowDevice(&data.EMG);
-
-	printf("Here 1");
 
 	if (initializeQuickDevice(&data.IMU) != -1) {
 		fprintf(stderr, "IMU initialized.\n");
@@ -177,15 +173,11 @@ void startSensors() {
 		fprintf(stderr, "Couldn't initialize IMU.\n");
 	}
 
-	printf("Here 2");
-
 	if (initializeQuickDevice(&data.CyGl) != -1) {
 		fprintf(stderr, "CyberGlove II initialized.\n");
 	} else {
 		fprintf(stderr, "Couldn't initialize CyberGlove II.\n");
 	}
-
-	printf("Here 3");
 
 	if (initializeQuickDevice(&data.Force) != -1) {
 		fprintf(stderr, "Force sensors initialized.\n");
@@ -193,15 +185,12 @@ void startSensors() {
 		fprintf(stderr, "Couldn't initialize force sensors.\n");
 	}
 
-	printf("Here 4");
-
 	if (initializeSlowDevice(&data.EMG) != -1) {
 		fprintf(stderr, "EMG initialized.\n");
 	} else {
 		fprintf(stderr, "Couldn't initialize EMG.\n");
 	}
 
-	printf("Here 5");
 }
 
 void startThreads() {
@@ -305,7 +294,7 @@ void getData() {
 void* IMUThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+//	setPriority();
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[0]);
@@ -320,7 +309,7 @@ void* IMUThread() {
 void* CyGlThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+//	setPriority();
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[1]);
@@ -335,7 +324,7 @@ void* CyGlThread() {
 void* ForceThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+//	setPriority();
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[2]);
@@ -350,7 +339,7 @@ void* ForceThread() {
 void* EMGThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+//	setPriority();
 
 	while (1 == 1) {
 		if (data.controlValues[3] != 0) {
