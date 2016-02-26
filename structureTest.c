@@ -294,7 +294,7 @@ void getData() {
 void* IMUThread() {
 
 	//make data collection thread a time critical thread
-//	setPriority();
+	setPriority();
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[0]);
@@ -309,7 +309,7 @@ void* IMUThread() {
 void* CyGlThread() {
 
 	//make data collection thread a time critical thread
-//	setPriority();
+	setPriority();
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[1]);
@@ -324,7 +324,7 @@ void* CyGlThread() {
 void* ForceThread() {
 
 	//make data collection thread a time critical thread
-//	setPriority();
+	setPriority();
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[2]);
@@ -339,7 +339,7 @@ void* ForceThread() {
 void* EMGThread() {
 
 	//make data collection thread a time critical thread
-//	setPriority();
+	setPriority();
 
 	while (1 == 1) {
 		if (data.controlValues[3] != 0) {
