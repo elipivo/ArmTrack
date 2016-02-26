@@ -95,7 +95,7 @@ int getQuickDeviceData(QuickDevice* quickDevice, double time) {
 		}
 
 //		printf("Here 6\n");
-		usleep(30000);
+		usleep(24000);
 		quickDevice->hasNewRead1 = 1;
 //		return -1;
 		break;
@@ -107,7 +107,7 @@ int getQuickDeviceData(QuickDevice* quickDevice, double time) {
 			quickDevice->readBuffer2[i] = quickDevice->reads;
 		}
 //		printf("Here 7\n");
-		usleep(25000);
+		usleep(24000);
 		quickDevice->hasNewRead2 = 1;
 //		return -1;
 		break;
