@@ -156,8 +156,6 @@ int main(void) {
 
 	fprintf(stderr, "Collecting data.\n");
 
-	fprintf(stderr, "Here 1\n");
-
 	data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "wb");
 	data.errors = 0;
 	data.reads = 0;
@@ -170,8 +168,6 @@ int main(void) {
 
 	while(digitalRead(SWITCH) == 1) {
 
-		fprintf(stderr, "Here 2\n");
-
 		last.tv_sec = curr.tv_sec; last.tv_usec = curr.tv_usec; //update last time
 		gettimeofday(&curr, NULL); //update current time
 		data.time += (curr.tv_sec - last.tv_sec) + (curr.tv_usec - last.tv_usec) * .000001; //increment by difference between last and current time
@@ -179,10 +175,7 @@ int main(void) {
 		digitalWrite(GREEN_LED, 1); //turn on green LED while recording data
 		digitalWrite(RED_LED, 0);
 
-
-		fprintf(stderr, "Here 3\n");
 		getData();
-		fprintf(stderr, "Here 4\n");
 
 		//signal print thread
 		while (data.controlValues[4] != 2) {};
@@ -191,21 +184,14 @@ int main(void) {
 		pthread_cond_signal(&threadSignals[4]);
 		pthread_mutex_unlock(&threadLocks[4]);
 
-		fprintf(stderr, "Here 5\n");
-
 		checkSensors();
-
-		fprintf(stderr, "Here 6\n");
 
 		//wait for 25ms cycle length
 		if (data.EMG.id == -1) {
-			fprintf(stderr, "Here 7\n");
 			do {
 				gettimeofday(&temp, NULL);
 			} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
 		}
-
-		fprintf(stderr, "Here 8\n");
 
 		//for testing and not locking up pi
 		if (data.time > 13) {
@@ -375,16 +361,12 @@ void startThreads() {
 
 void getData() {
 
-	fprintf(stderr, "Here a");
-
 	if (data.IMU.id != -1) {
 		pthread_mutex_lock(&threadLocks[0]);
 		data.controlValues[0] = 1;
 		pthread_cond_signal(&threadSignals[0]);
 		pthread_mutex_unlock(&threadLocks[0]);
 	}
-
-	fprintf(stderr, "Here b");
 
 	if (data.CyGl.id != -1) {
 		pthread_mutex_lock(&threadLocks[1]);
@@ -393,8 +375,6 @@ void getData() {
 		pthread_mutex_unlock(&threadLocks[1]);
 	}
 
-	fprintf(stderr, "Here c");
-
 	if (data.Force.id != -1) {
 		pthread_mutex_lock(&threadLocks[2]);
 		data.controlValues[2] = 1;
@@ -402,28 +382,23 @@ void getData() {
 		pthread_mutex_unlock(&threadLocks[2]);
 	}
 
-	fprintf(stderr, "Here d");
-
 	//wait for data collection to be ready for another cycle
 	if (data.IMU.id != -1) {
 		while (data.controlValues[0] != 2) {}
 	}
-	fprintf(stderr, "Here e");
+
 	if (data.CyGl.id != -1) {
 		while (data.controlValues[1] != 2) {}
 	}
-	fprintf(stderr, "Here f");
+
 	if (data.Force.id != -1) {
-		fprintf(stderr, "Here f1");
 		while (data.controlValues[2] != 2) {}
-		fprintf(stderr, "Here f2");
 	}
-	fprintf(stderr, "Here g");
+
 	if (data.EMG.id != -1) {
 		while (data.controlValues[3] != 2) {}
 		data.controlValues[3] = 1;
 	}
-	fprintf(stderr, "Here h");
 
 }
 
