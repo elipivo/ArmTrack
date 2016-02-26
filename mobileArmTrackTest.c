@@ -375,18 +375,26 @@ void startThreads() {
 
 void getData() {
 
+	fprintf(stderr, "Here a");
+
 	if (data.IMU.id != -1) {
 		pthread_mutex_lock(&threadLocks[0]);
 		data.controlValues[0] = 1;
 		pthread_cond_signal(&threadSignals[0]);
 		pthread_mutex_unlock(&threadLocks[0]);
 	}
+
+	fprintf(stderr, "Here b");
+
 	if (data.CyGl.id != -1) {
 		pthread_mutex_lock(&threadLocks[1]);
 		data.controlValues[1] = 1;
 		pthread_cond_signal(&threadSignals[1]);
 		pthread_mutex_unlock(&threadLocks[1]);
 	}
+
+	fprintf(stderr, "Here c");
+
 	if (data.Force.id != -1) {
 		pthread_mutex_lock(&threadLocks[2]);
 		data.controlValues[2] = 1;
@@ -394,20 +402,26 @@ void getData() {
 		pthread_mutex_unlock(&threadLocks[2]);
 	}
 
+	fprintf(stderr, "Here d");
+
 	//wait for data collection to be ready for another cycle
 	if (data.IMU.id != -1) {
 		while (data.controlValues[0] != 2) {}
 	}
+	fprintf(stderr, "Here e");
 	if (data.CyGl.id != -1) {
 		while (data.controlValues[1] != 2) {}
 	}
+	fprintf(stderr, "Here f");
 	if (data.Force.id != -1) {
 		while (data.controlValues[2] != 2) {}
 	}
+	fprintf(stderr, "Here g");
 	if (data.EMG.id != -1) {
 		while (data.controlValues[3] != 2) {}
 		data.controlValues[3] = 1;
 	}
+	fprintf(stderr, "Here h");
 
 }
 
