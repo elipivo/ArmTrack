@@ -199,7 +199,7 @@ void startThreads() {
 		data.controlValues[i] = 0;
 	}
 
-	if (data.IMU.id > 0) {
+	if (data.IMU.id != -1) {
 
 		pthread_mutex_init(&threadLocks[0], NULL);
 		pthread_cond_init(&threadSignals[0], NULL);
@@ -209,7 +209,7 @@ void startThreads() {
 			exit(1);
 		}
 	}
-	if (data.CyGl.id > 0) {
+	if (data.CyGl.id != -1) {
 
 		pthread_mutex_init(&threadLocks[1], NULL);
 		pthread_cond_init(&threadSignals[1], NULL);
@@ -219,7 +219,7 @@ void startThreads() {
 			exit(1);
 		}
 	}
-	if (data.Force.id > 0) {
+	if (data.Force.id != -1) {
 
 		pthread_mutex_init(&threadLocks[2], NULL);
 		pthread_cond_init(&threadSignals[2], NULL);
@@ -229,7 +229,7 @@ void startThreads() {
 			exit(1);
 		}
 	}
-	if (data.EMG.id > 0) {
+	if (data.EMG.id != -1) {
 
 		pthread_mutex_init(&threadLocks[3], NULL);
 		pthread_cond_init(&threadSignals[3], NULL);
