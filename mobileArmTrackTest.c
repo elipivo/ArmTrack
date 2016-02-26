@@ -122,7 +122,7 @@ int main(void) {
 
 	fprintf(stderr, "Beginning Mobile Test\n");
 
-	setPriority();
+//	setPriority();
 
 	//initialize wiringPi and setup pins
 	if (wiringPiSetup() != 0) {
