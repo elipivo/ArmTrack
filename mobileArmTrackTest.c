@@ -122,7 +122,7 @@ int main(void) {
 
 	fprintf(stderr, "Beginning Mobile Test\n");
 
-//	setPriority();
+	setPriority();
 
 	//initialize wiringPi and setup pins
 	if (wiringPiSetup() != 0) {
@@ -187,10 +187,16 @@ int main(void) {
 		checkSensors();
 
 		//wait for 25ms cycle length
-		if (data.EMG.id <= 0) {
+		if (data.EMG.id == -1) {
 			do {
 				gettimeofday(&temp, NULL);
 			} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
+		}
+
+		//for testing and not locking up pi
+		if (data.time > 13) {
+			endSession();
+			return 1;
 		}
 
 	}

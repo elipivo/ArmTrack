@@ -116,7 +116,8 @@ int main(void) {
 		getData();
 
 		//signal print thread
-		while (data.controlValues[4] != 2) {}; pthread_mutex_lock(&threadLocks[4]);
+		while (data.controlValues[4] != 2) {};
+		pthread_mutex_lock(&threadLocks[4]);
 		data.controlValues[4] = 1;
 		pthread_cond_signal(&threadSignals[4]);
 		pthread_mutex_unlock(&threadLocks[4]);
@@ -124,7 +125,7 @@ int main(void) {
 		checkSensors();
 
 		//wait for 25ms cycle length
-		if (data.EMG.id <= 0) {
+		if (data.EMG.id == -1) {
 			do {
 				gettimeofday(&temp, NULL);
 			} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
@@ -144,19 +145,19 @@ int main(void) {
 void setPriority() {
 	//should be careful with this!
 	//make data collection thread a time critical thread
-//	struct sched_param param;
-//	param.sched_priority = sched_get_priority_max(SCHED_RR);
-//	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
-//		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
-//		fprintf(stderr, "*Remember to run as root.*\n");
-////		exit(1);
-//	}
-//
-//	//lock process in memory
-//	if (mlockall(MCL_FUTURE) != 0) {
-//		fprintf(stderr, "ERROR: Couldn't lock process in memory.\n");
-////		exit(1);
-//	}
+	struct sched_param param;
+	param.sched_priority = sched_get_priority_max(SCHED_RR);
+	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
+		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
+		fprintf(stderr, "*Remember to run as root.*\n");
+		exit(1);
+	}
+
+	//lock process in memory
+	if (mlockall(MCL_FUTURE) != 0) {
+		fprintf(stderr, "ERROR: Couldn't lock process in memory.\n");
+		exit(1);
+	}
 }
 
 void startSensors() {
@@ -265,19 +266,19 @@ void startThreads() {
 
 void getData() {
 
-	if (data.IMU.id > 0) {
+	if (data.IMU.id != -1) {
 		pthread_mutex_lock(&threadLocks[0]);
 		data.controlValues[0] = 1;
 		pthread_cond_signal(&threadSignals[0]);
 		pthread_mutex_unlock(&threadLocks[0]);
 	}
-	if (data.CyGl.id > 0) {
+	if (data.CyGl.id != -1) {
 		pthread_mutex_lock(&threadLocks[1]);
 		data.controlValues[1] = 1;
 		pthread_cond_signal(&threadSignals[1]);
 		pthread_mutex_unlock(&threadLocks[1]);
 	}
-	if (data.Force.id > 0) {
+	if (data.Force.id != -1) {
 		pthread_mutex_lock(&threadLocks[2]);
 		data.controlValues[2] = 1;
 		pthread_cond_signal(&threadSignals[2]);
@@ -285,16 +286,16 @@ void getData() {
 	}
 
 	//wait for data collection to be ready for another cycle
-	if (data.IMU.id > 0) {
+	if (data.IMU.id != -1) {
 		while (data.controlValues[0] != 2) {}
 	}
-	if (data.CyGl.id > 0) {
+	if (data.CyGl.id != -1) {
 		while (data.controlValues[1] != 2) {}
 	}
-	if (data.Force.id > 0) {
+	if (data.Force.id != -1) {
 		while (data.controlValues[2] != 2) {}
 	}
-	if (data.EMG.id > 0) {
+	if (data.EMG.id != -1) {
 		while (data.controlValues[3] != 2) {}
 		data.controlValues[3] = 1;
 	}
@@ -452,10 +453,26 @@ void* printSaveDataThread() {
 
 		data.reads++;
 
-		IMUError = updateQuickDeviceRead(&data.IMU);
-		CyGlError = updateQuickDeviceRead(&data.CyGl);
-		ForceError = updateQuickDeviceRead(&data.Force);
-		EMGError = updateSlowDeviceRead(&data.EMG);
+		if (data.IMU.id != -1) {
+			IMUError = updateQuickDeviceRead(&data.IMU);
+		} else {
+			IMUError = 1; // no error
+		}
+		if (data.CyGl.id != -1) {
+			CyGlError = updateQuickDeviceRead(&data.CyGl);
+		} else {
+			CyGlError = 1; //no error
+		}
+		if (data.Force.id != -1) {
+			ForceError = updateQuickDeviceRead(&data.Force);
+		} else {
+			ForceError = 1; //no error
+		}
+		if (data.EMG.id != -1) {
+			EMGError = updateSlowDeviceRead(&data.EMG);
+		} else {
+			EMGError = 1; //no error
+		}
 
 		if (IMUError != -1 && CyGlError != -1 && ForceError != -1 && EMGError != -1) {
 			//no missed read
@@ -468,7 +485,7 @@ void* printSaveDataThread() {
 		}
 
 		//write time
-		printf("%5f\t", data.IMU.readTime);
+		printf("%5f\t", data.time);
 		fwrite(&time, sizeof(double), 1, data.outFile);
 		fwrite(" ", sizeof(char), 1, data.outFile);
 

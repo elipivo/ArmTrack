@@ -7,7 +7,7 @@
  * 	prints it to the screen.
  *
  * Usage:
- * 	Compile with: gcc -o readIMU readIMU.c IMU.c -std=gnu99 -Wall -Wextra
+ * 	Compile with: gcc -o readIMU readIMU.c IMU.c -std=gnu99 -Wall -Wextra -pthread
  * 	Start with ./readIMU, end program with ctrl-d
  */
 
