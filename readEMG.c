@@ -96,7 +96,11 @@ int main(void) {
 		gettimeofday(&curr, NULL); //update current time
 		data.time += (curr.tv_sec - last.tv_sec) + (curr.tv_usec - last.tv_usec) * .000001; //increment by difference between last and current time
 
+		fprintf(stderr, "Here 6\n");
+
 		getEMGData(&data.EMG, data.time);
+
+		fprintf(stderr, "Here 7\n");
 
 		if (data.EMG.consecutiveErrors > 20) {
 			//.5 sec of missed data
