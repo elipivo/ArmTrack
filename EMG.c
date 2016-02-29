@@ -196,6 +196,8 @@ int updateEMGRead(EMG* EMG) {
 
 void closeEMG(EMG* EMG) {
 
+	fprintf(stderr, "Here a\n");
+
 	if (EMG->id != -1) {
 		libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 1);
 		libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_OUT| 2);
@@ -207,6 +209,8 @@ void closeEMG(EMG* EMG) {
 		}
 		libusb_close(EMG->udev);
 	}
+
+	fprintf(stderr, "Here b\n");
 
 	EMG->id = -1;
 	EMG->udev = NULL;
@@ -221,5 +225,7 @@ void closeEMG(EMG* EMG) {
 	EMG->reads = 0;
 	EMG->errors = 0;
 	EMG->consecutiveErrors = 0;
+
+	fprintf(stderr, "Here c\n");
 
 }
