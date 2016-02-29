@@ -728,6 +728,8 @@ void* printSaveDataThread() {
 
 void endSession() {
 
+	//stop EMG data collection
+	data.controlValues[3] = 0;
 	while (data.controlValues[4] != 2) {}; //wait for print thread to be done
 
 	for (int i = 0; i < 5; i++) {
