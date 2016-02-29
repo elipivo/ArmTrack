@@ -127,11 +127,10 @@ int main(void) {
 
 void endSession() {
 
+	while (data.print != 2) {}; //wait for print thread to be done
 	pthread_cancel(printThreadID);
 	pthread_mutex_destroy(&printLock);
 	pthread_cond_destroy(&printSignal);
-
-	usleep(25000); //ensure prints complete
 
 	double percentMissed = (data.EMG.errors/ (double) data.EMG.reads) * 100;
 
