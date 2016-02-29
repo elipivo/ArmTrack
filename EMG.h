@@ -44,7 +44,7 @@ typedef struct  {
 /*
  * Sets up an EMG.
  * Ensures its ready to collect data from.
- * Returns 3 if initialization succeeded, -1 if it failed
+ * Returns 1 if initialization succeeded, -1 if it failed
  */
 int initializeEMG(EMG* EMG);
 

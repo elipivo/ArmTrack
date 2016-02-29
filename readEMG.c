@@ -61,22 +61,6 @@ int main(void) {
 	flags = fcntl(fileno(stdin), F_SETFL, flags);
 	char userInput;
 
-	//// should only use this with programs controlled by a switch I believe
-	//	//make data collection thread a time critical thread
-	//	struct sched_param param;
-	//	param.sched_priority = sched_get_priority_max(SCHED_RR);
-	//	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
-	//		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
-	//		fprintf(stderr, "*Remember to run as root.*\n");
-	//		exit(1);
-	//	}
-	//
-	//	//lock process in memory
-	//	if (mlockall(MCL_FUTURE) != 0) {
-	//		fprintf(stderr, "ERROR: Couldn't lock process in memory.\n");
-	//		exit(1);
-	//	}
-
 	if (startEMG(&data.EMG) != 1) {
 		printf("readEMG Error: Couldn't connect to EMG.\n");
 		exit(1);
@@ -173,11 +157,15 @@ void* printThread() {
 			printf("*");
 		}
 
-		printf("%05.3f\t", data.EMG.readTime);
-		for (int i = 0; i < EMG_READ_SZ * EMG_READS_PER_CYCLE; i++) {
-			printf("%03.2f\t", data.EMG.read[i]);
+		for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
+			printf("Read %i:   ", i + 1);
+			for (int j = 0; j < EMG_READ_SZ; j++) {
+				printf("%fV\t", data.EMG->read[i * EMG_READ_SZ + j]);
+			}
+			printf("\n");
 		}
 		printf("\n");
+
 		pthread_mutex_unlock(&printLock);
 	}
 	pthread_exit(NULL);

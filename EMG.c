@@ -23,24 +23,32 @@ int initializeEMG(EMG* EMG) {
 	EMG->errors = 0;
 	EMG->consecutiveErrors = 0;
 
-	//initialize libusb
-	if (libusb_init(NULL) < 0) {
-		fprintf(stderr, "EMG ERROR: Failed to initialize libusb.\n");
+	if (!(EMG->udev = usb_device_find_USB_MCC(USB1408FS_PID, NULL))) {
+		fprintf(stderr, "No device found.\n");
 		return -1;
 	}
 
-	if ((EMG->udev = usb_device_find_USB_MCC(USB1408FS_PID, NULL))) {
-		fprintf(stderr, "EMG ERROR: USB-1408FS Device is found!\n");
-		EMG->id = 3;
-	} else {
-		fprintf(stderr, "EMG ERROR: No device found.\n");
-		return -1;
+	// claim all the needed interfaces for AInScan
+	for (int i = 1; i <= 3; i++) {
+		int ret = libusb_detach_kernel_driver(EMG->udev, i);
+		if (ret < 0) {
+			fprintf(stderr, "Can't detach kernel from interface");
+			usbReset_USB1408FS(EMG->udev);
+			return -1;
+		}
+		ret = libusb_claim_interface(EMG->udev, i);
+		if (ret < 0) {
+			fprintf(stderr, "Can't claim interface.");
+			return -1;
+		}
 	}
 
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTA, DIO_DIR_OUT);
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTB, DIO_DIR_IN);
 	usbDOut_USB1408FS(EMG->udev, DIO_PORTA, 0);
 	usbDOut_USB1408FS(EMG->udev, DIO_PORTA, 0);
+
+	EMG->id = 1;
 
 	return EMG->id;
 }
@@ -88,7 +96,7 @@ int getEMGData(EMG* EMG, double time) {
 	struct timeval start, end;
 	gettimeofday(&start, NULL);
 
-	float freq = 1000;
+	float freq = 8000;
 	int count = EMG_READS_PER_CYCLE * EMG_READ_SZ;
 	uint8_t options = AIN_EXECUTION | AIN_GAIN_QUEUE;
 
@@ -99,8 +107,10 @@ int getEMGData(EMG* EMG, double time) {
 		//read into readBuffer1 on even reads
 		EMG->readBuffer1Time = time;
 
-		if (usbAInScan_USB1408FS_SE(EMG->udev, 0, 7, count,
-				&freq, options, EMG->readBuffer1) != count) {
+		usbAInStop_USB1408FS(EMG->udev);
+
+		if (usbAInScan_USB1408FS_SE(EMG->udev, 0, 0, count, &freq, options, EMG->readBuffer1)
+				!= count) { //need to check error handling here
 
 			//ensure method takes precisely 25ms even if error occurs
 			gettimeofday(&end, NULL);
@@ -117,8 +127,10 @@ int getEMGData(EMG* EMG, double time) {
 		//read into readBuffer2 on odd reads
 		EMG->readBuffer2Time = time;
 
-		if (usbAInScan_USB1408FS_SE(EMG->udev, 0, 7, count,
-				&freq, options, EMG->readBuffer2) != count) {
+		usbAInStop_USB1408FS(EMG->udev);
+
+		if (usbAInScan_USB1408FS_SE(EMG->udev, 0, 0, count, &freq, options, EMG->readBuffer2)
+				!= count) { //need to check error handling here
 
 			//ensure method takes precisely 25ms even if error occurs
 			gettimeofday(&end, NULL);
@@ -179,17 +191,17 @@ int updateEMGRead(EMG* EMG) {
 
 void closeEMG(EMG* EMG) {
 
-	//for some reason this is screwing this up
-	//maybe need to check if id is -1 or not before doing anything?
-	libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 1);
-	libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_OUT| 2);
-	libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 3);
-	libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 4);
+	if (EMG->id != -1) {
+		libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 1);
+		libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_OUT| 2);
+		libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 3);
+		libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 4);
 
-	for (int i = 0; i <= 4; i++) {
-		libusb_release_interface(EMG->udev, i);
+		for (int i = 0; i <= 4; i++) {
+			libusb_release_interface(EMG->udev, i);
+		}
+		libusb_close(EMG->udev);
 	}
-	libusb_close(EMG->udev);
 
 	EMG->id = -1;
 	EMG->udev = NULL;
