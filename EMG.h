@@ -18,9 +18,9 @@
 #include "/home/pi/mcc-libusb/pmd.h"
 #include "/home/pi/mcc-libusb/usb-1408FS.h"
 
-#define EMG_READS_PER_CYCLE 200 //number of reads we need in 25ms
+#define EMG_READS_PER_CYCLE 25 //number of reads we need in 25ms
 #define EMG_READ_SZ 8    //number of channels we read from
-#define CYCLE_TIME .2 //in seconds
+#define CYCLE_TIME .025 //in seconds
 
 typedef struct  {
 	int id;
