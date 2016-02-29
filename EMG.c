@@ -23,14 +23,14 @@ int initializeEMG(EMG* EMG) {
 	EMG->errors = 0;
 	EMG->consecutiveErrors = 0;
 
-	printf("Here a\n");
+	fprintf(stderr, "Here a\n");
 
 	if (!(EMG->udev = usb_device_find_USB_MCC(USB1408FS_PID, NULL))) {
 		fprintf(stderr, "No device found.\n");
 		return -1;
 	}
 
-	printf("Here b\n");
+	fprintf(stderr, "Here b\n");
 
 	// claim all the needed interfaces for AInScan
 	for (int i = 1; i <= 3; i++) {
@@ -47,7 +47,7 @@ int initializeEMG(EMG* EMG) {
 		}
 	}
 
-	printf("Here c\n");
+	fprintf(stderr, "Here c\n");
 
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTA, DIO_DIR_OUT);
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTB, DIO_DIR_IN);

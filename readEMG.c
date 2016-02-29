@@ -8,7 +8,7 @@
  *
  * Usage:
  * 	Compile with:
- *		gcc -std=gnu99 -g -Wall -I. -o readEMG readEMG.c EMG.c -L. -lmccusb  -lm -L/usr/local/lib -lhidapi-libusb -lusb-1.0
+ *		gcc -std=gnu99 -pthread -g -Wall -I. -o readEMG readEMG.c EMG.c -L. -lmccusb  -lm -L/usr/local/lib -lhidapi-libusb -lusb-1.0
  *
  *
  * 	Start with ./readEMG, end program with ctrl-d
@@ -55,16 +55,22 @@ int main(void) {
 
 	fprintf(stderr, "Reading EMG\n");
 
+	fprintf(stderr, "Here 1\n");
+
 	//make stdin non blocking
 	int flags = fcntl(fileno(stdin), F_GETFL, 0);
 	flags |= O_NONBLOCK;
 	flags = fcntl(fileno(stdin), F_SETFL, flags);
 	char userInput;
 
+	fprintf(stderr, "Here 2\n");
+
 	if (startEMG(&data.EMG) != 1) {
 		printf("readEMG Error: Couldn't connect to EMG.\n");
 		exit(1);
 	}
+
+	fprintf(stderr, "Here 3\n");
 
 	pthread_mutex_init(&printLock, NULL);
 	pthread_cond_init(&printSignal, NULL);
