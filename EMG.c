@@ -201,7 +201,7 @@ void closeEMG(EMG* EMG) {
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 3);
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 4);
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 5);
-    for (i = 0; i <= 3; i++) {
+    for (int i = 0; i <= 3; i++) {
       libusb_release_interface(EMG->udev, i);
     }
     libusb_close(EMG->udev);
