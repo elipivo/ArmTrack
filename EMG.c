@@ -119,7 +119,7 @@ int getEMGData(EMG* EMG, double time) {
 
 			//ensure method takes precisely 25ms even if error occurs
 			gettimeofday(&end, NULL);
-			while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 <= .025) {
+			while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 <= CYCLE_TIME) {
 				gettimeofday(&end, NULL);
 			}
 
@@ -139,7 +139,7 @@ int getEMGData(EMG* EMG, double time) {
 
 			//ensure method takes precisely 25ms even if error occurs
 			gettimeofday(&end, NULL);
-			while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 <= .025) {
+			while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 <= CYCLE_TIME) {
 				gettimeofday(&end, NULL);
 			}
 

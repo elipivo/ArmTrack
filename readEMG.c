@@ -117,7 +117,7 @@ int main(void) {
 
 		do {
 			gettimeofday(&temp, NULL);
-		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
+		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < CYCLE_TIME);
 
 	}
 
@@ -163,14 +163,14 @@ void* printThread() {
 		}
 
 		printf("%f\n", data.EMG.readTime);
-//		for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
-//			printf("Read %i:   ", i + 1);
-//			for (int j = 0; j < EMG_READ_SZ; j++) {
-//				printf("%fV\t", data.EMG.read[i * EMG_READ_SZ + j]);
-//			}
-//			printf("\n");
-//		}
-//		printf("\n");
+		for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
+			printf("Read %i:   ", i + 1);
+			for (int j = 0; j < EMG_READ_SZ; j++) {
+				printf("%fV\t", data.EMG.read[i * EMG_READ_SZ + j]);
+			}
+			printf("\n");
+		}
+		printf("\n");
 
 		pthread_mutex_unlock(&printLock);
 	}
