@@ -729,7 +729,7 @@ void* printSaveDataThread() {
 
 void endSession() {
 
-	while (data.print != 2) {}; //wait for print thread to be done
+	while (data.controlValues[4] != 2) {}; //wait for print thread to be done
 
 	for (int i = 0; i < 5; i++) {
 		pthread_cancel(threads[i]);
