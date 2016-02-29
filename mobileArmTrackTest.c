@@ -122,8 +122,6 @@ int main(void) {
 
 	fprintf(stderr, "Beginning Mobile Test\n");
 
-//	setPriority();
-
 	//initialize wiringPi and setup pins
 	if (wiringPiSetup() != 0) {
 		exit(0);
@@ -228,8 +226,7 @@ void startSensors() {
 	closeIMU(&data.IMU);
 	closeCyGl(&data.CyGl);
 	closeForce(&data.Force);
-	//not ready to use EMG
-	/*closeEMG(&data.EMG);*/
+	closeEMG(&data.EMG);
 
 	if (initializeIMU(&data.IMU) != -1) {
 		fprintf(stderr, "IMU initialized.\n");
@@ -280,7 +277,7 @@ void startSensors() {
 	}
 
 	data.EMG.id = -1;
-	/* Not ready to use EMG
+
 	if (initializeEMG(&data.EMG) != -1) {
 		fprintf(stderr, "EMG initialized.\n");
 		//blink GREEN led if EMG did connect
@@ -296,7 +293,6 @@ void startSensors() {
 		digitalWrite(RED_LED, 0);
 		usleep(500000); //.5 sec
 	}
-	*/
 }
 
 void startThreads() {
@@ -700,10 +696,14 @@ void* printSaveDataThread() {
 				//no missed read
 				fwrite("=", sizeof(char), 1, data.outFile);
 			}
-			//save EMG data
-			for (int i = 0; i < EMG_READ_SZ; i++) {
-				printf("%f\t", data.EMG.read[i]);
+			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
+				printf("Read %i:   ", i + 1);
+				for (int j = 0; j < EMG_READ_SZ; j++) {
+					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+				}
+				printf("\n");
 			}
+			printf("\n");
 			fwrite(data.EMG.read, sizeof(float), sizeof(data.EMG.read)/sizeof(float), data.outFile);
 		} else {
 			printf("EMG UNUSED");
@@ -778,8 +778,7 @@ void endSession() {
 	closeIMU(&data.IMU);
 	closeCyGl(&data.CyGl);
 	closeForce(&data.Force);
-	//not ready for EMG
-	/*closeEMG(&data.EMG);*/
+	closeEMG(&data.EMG);
 
 	fprintf(stderr, "Session Ended\n\n");
 
