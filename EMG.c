@@ -219,7 +219,7 @@ void closeEMG(EMG* EMG) {
 	EMG->hasNewRead1 = 0;
 	EMG->hasNewRead2 = 0;
 	EMG->bufferToUse = 2;
-	for (int i = 0; i < EMG_READ_SZ; i++) {
+	for (int i = 0; i < EMG_READ_SZ * EMG_READS_PER_CYCLE; i++) {
 		EMG->readBuffer1[i] = 0;
 		EMG->readBuffer2[i] = 0;
 		EMG->read[i] = 0;
