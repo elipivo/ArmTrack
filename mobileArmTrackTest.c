@@ -774,9 +774,14 @@ void endSession() {
 	digitalWrite(RED_LED, 0);
 
 	//close all sensors
+
+	fprintf(stderr, "Here 1\n");
 	closeIMU(&data.IMU);
+	fprintf(stderr, "Here 2\n");
 	closeCyGl(&data.CyGl);
+	fprintf(stderr, "Here 3\n");
 	closeForce(&data.Force);
+	fprintf(stderr, "Here 4\n");
 	closeEMG(&data.EMG);
 
 	fprintf(stderr, "Session Ended\n\n");

@@ -220,6 +220,4 @@ void closeEMG(EMG* EMG) {
 	EMG->errors = 0;
 	EMG->consecutiveErrors = 0;
 
-	fprintf(stderr, "Here c\n");
-
 }
