@@ -23,38 +23,30 @@ int initializeEMG(EMG* EMG) {
 	EMG->errors = 0;
 	EMG->consecutiveErrors = 0;
 
-	fprintf(stderr, "Here a\n");
-
 	if (libusb_init(NULL) < 0) {
-		fprintf(stderr, "ERROR: Failed to initialize libusb.\n");
+		fprintf(stderr, "EMG.c ERROR: Failed to initialize libusb.\n");
 		return 1;
 	}
 
-	fprintf(stderr, "Here b\n");
-
 	if (!(EMG->udev = usb_device_find_USB_MCC(USB1408FS_PID, NULL))) {
-		fprintf(stderr, "No device found.\n");
+		fprintf(stderr, "EMG.c ERROR: No device found.\n");
 		return -1;
 	}
-
-	fprintf(stderr, "Here c\n");
 
 	// claim all the needed interfaces for AInScan
 	for (int i = 1; i <= 3; i++) {
 		int ret = libusb_detach_kernel_driver(EMG->udev, i);
 		if (ret < 0) {
-			fprintf(stderr, "Can't detach kernel from interface");
+			fprintf(stderr, "EMG.c ERROR: Can't detach kernel from interface.\n");
 			usbReset_USB1408FS(EMG->udev);
 			return -1;
 		}
 		ret = libusb_claim_interface(EMG->udev, i);
 		if (ret < 0) {
-			fprintf(stderr, "Can't claim interface.");
+			fprintf(stderr, "EMG.c ERROR: Can't claim interface.\n");
 			return -1;
 		}
 	}
-
-	fprintf(stderr, "Here d\n");
 
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTA, DIO_DIR_OUT);
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTB, DIO_DIR_IN);
@@ -123,7 +115,7 @@ int getEMGData(EMG* EMG, double time) {
 		usbAInStop_USB1408FS(EMG->udev);
 
 		if (usbAInScan_USB1408FS_SE(EMG->udev, 0, 0, count, &freq, options, EMG->readBuffer1)
-				!= count) { //need to check error handling here
+				!= 0) {
 
 			//ensure method takes precisely 25ms even if error occurs
 			gettimeofday(&end, NULL);
@@ -143,7 +135,7 @@ int getEMGData(EMG* EMG, double time) {
 		usbAInStop_USB1408FS(EMG->udev);
 
 		if (usbAInScan_USB1408FS_SE(EMG->udev, 0, 0, count, &freq, options, EMG->readBuffer2)
-				!= count) { //need to check error handling here
+				!= 0) { //need to check error handling here
 
 			//ensure method takes precisely 25ms even if error occurs
 			gettimeofday(&end, NULL);
