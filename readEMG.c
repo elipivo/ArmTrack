@@ -80,9 +80,13 @@ int main(void) {
 		exit(1);
 	}
 
+	fprintf(stderr, "Here 4\n");
+
 	struct timeval last;
 	struct timeval curr;
 	struct timeval temp;
+
+	fprintf(stderr, "Here 5\n");
 
 	gettimeofday(&curr, NULL); //update current time
 
