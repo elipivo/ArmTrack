@@ -136,8 +136,9 @@ int main(void) {
 
 void endSession() {
 
-	pthread_cancel(printThread);
+	while (data.print != 2) {}; //wait for print thread to be done
 
+	pthread_cancel(printThread);
 	pthread_mutex_destroy(&printLock);
 	pthread_cond_destroy(&printSignal);
 

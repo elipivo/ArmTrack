@@ -729,8 +729,8 @@ void* printSaveDataThread() {
 
 void endSession() {
 
-	//ensure the print thread is allowed to complete
-	usleep(30000);
+	while (data.print != 2) {}; //wait for print thread to be done
+
 	for (int i = 0; i < 5; i++) {
 		pthread_cancel(threads[i]);
 		pthread_mutex_destroy(&threadLocks[i]);

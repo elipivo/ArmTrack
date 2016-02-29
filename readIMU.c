@@ -140,6 +140,8 @@ void setPriority() {
 
 void endSession() {
 
+	while (data.print != 2) {}; //wait for print thread to be done
+
 	pthread_cancel(printThread);
 	pthread_mutex_destroy(&printLock);
 	pthread_cond_destroy(&printSignal);
