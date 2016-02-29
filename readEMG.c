@@ -102,6 +102,12 @@ int main(void) {
 
 		fprintf(stderr, "Here 7\n");
 
+		while (data.print != 2) {}; //wait for print thread to be ready
+		pthread_mutex_lock(&printLock);
+		data.print = 1;
+		pthread_cond_signal(&printSignal);
+		pthread_mutex_unlock(&printLock);
+
 		if (data.EMG.consecutiveErrors > 20) {
 			//.5 sec of missed data
 			//big error happening, try to reconnect to the EMG
