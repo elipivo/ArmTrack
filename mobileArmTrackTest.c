@@ -223,10 +223,14 @@ void setPriority() {
 
 void startSensors() {
 
+	fprintf(stderr, "Here 1\n");
+
 	closeIMU(&data.IMU);
 	closeCyGl(&data.CyGl);
 	closeForce(&data.Force);
 	closeEMG(&data.EMG);
+
+	fprintf(stderr, "Here 2\n");
 
 	if (initializeIMU(&data.IMU) != -1) {
 		fprintf(stderr, "IMU initialized.\n");
