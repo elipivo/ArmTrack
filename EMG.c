@@ -25,12 +25,19 @@ int initializeEMG(EMG* EMG) {
 
 	fprintf(stderr, "Here a\n");
 
+	if (libusb_init(NULL) < 0) {
+		fprintf(stderr, "ERROR: Failed to initialize libusb.\n");
+		return 1;
+	}
+
+	fprintf(stderr, "Here b\n");
+
 	if (!(EMG->udev = usb_device_find_USB_MCC(USB1408FS_PID, NULL))) {
 		fprintf(stderr, "No device found.\n");
 		return -1;
 	}
 
-	fprintf(stderr, "Here b\n");
+	fprintf(stderr, "Here c\n");
 
 	// claim all the needed interfaces for AInScan
 	for (int i = 1; i <= 3; i++) {
@@ -47,7 +54,7 @@ int initializeEMG(EMG* EMG) {
 		}
 	}
 
-	fprintf(stderr, "Here c\n");
+	fprintf(stderr, "Here d\n");
 
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTA, DIO_DIR_OUT);
 	usbDConfigPort_USB1408FS(EMG->udev, DIO_PORTB, DIO_DIR_IN);
