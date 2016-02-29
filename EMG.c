@@ -196,15 +196,23 @@ int updateEMGRead(EMG* EMG) {
 
 void closeEMG(EMG* EMG) {
 
+	fprintf(stderr, "Here a\n");
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 1);
+    fprintf(stderr, "Here b\n");
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_OUT| 2);
+    fprintf(stderr, "Here c\n");
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 3);
+    fprintf(stderr, "Here d\n");
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 4);
+    fprintf(stderr, "Here e\n");
     libusb_clear_halt(EMG->udev, LIBUSB_ENDPOINT_IN | 5);
+    fprintf(stderr, "Here f\n");
     for (int i = 0; i <= 3; i++) {
       libusb_release_interface(EMG->udev, i);
     }
+    fprintf(stderr, "Here g\n");
     libusb_close(EMG->udev);
+    fprintf(stderr, "Here h\n");
 
 	EMG->id = -1;
 	EMG->udev = NULL;
