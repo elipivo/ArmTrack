@@ -130,10 +130,10 @@ int main(void) {
 			gettimeofday(&temp, NULL);
 		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
 
-		if (data.time > 13) {
-			endSession();
-			return 1;
-		}
+//		if (data.time > 13) {
+//			endSession();
+//			return 1;
+//		}
 
 	}
 
