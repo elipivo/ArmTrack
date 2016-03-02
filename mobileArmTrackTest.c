@@ -72,6 +72,7 @@ typedef struct {
 	Force Force;
 	EMG EMG;
 
+	int readsSinceEMG;
 	double time;
 	int errors;
 	int reads;
@@ -130,6 +131,8 @@ int main(void) {
 	pinMode(RED_LED, OUTPUT);
 	pinMode(SWITCH, INPUT);
 	pullUpDnControl(SWITCH, PUD_UP);
+
+	data.readsSinceEMG = 7;
 
 	fprintf(stderr, "Connecting to sensors.\n");
 
@@ -390,9 +393,12 @@ void getData() {
 		while (data.controlValues[2] != 2) {}
 	}
 
-	if (data.EMG.id != -1) {
+	data.readsSinceEMG++;
+	if (data.EMG.id != -1 && data.readsSinceEMG == 8) {
+		//once every 8 reads, it will wait for new EMG data
 		while (data.controlValues[3] != 2) {}
 		data.controlValues[3] = 1;
+		data.readsSinceEMG = 0;
 	}
 
 }
@@ -586,7 +592,7 @@ void* printSaveDataThread() {
 		} else {
 			ForceError = 1;
 		}
-		if (data.EMG.id != -1) {
+		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
 			EMGError = updateEMGRead(&data.EMG);
 		} else {
 			EMGError = 1;
@@ -602,7 +608,7 @@ void* printSaveDataThread() {
 			digitalWrite(RED_LED, 1);
 
 			data.errors++;
-			fprintf(stderr, "*");
+			printf("*");
 			fwrite("*", sizeof(char), 1, data.outFile);
 		}
 
@@ -685,7 +691,7 @@ void* printSaveDataThread() {
 		printf("\n");
 		fwrite(" ", sizeof(char), 1, data.outFile);
 
-		if (data.EMG.id != -1) {
+		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
 			//EMG missed read flag
 			if (EMGError == -1) {
 				//this sensor had a missed read, mark it with an asterisk
@@ -704,7 +710,7 @@ void* printSaveDataThread() {
 			}
 			printf("\n");
 			fwrite(data.EMG.read, sizeof(float), sizeof(data.EMG.read)/sizeof(float), data.outFile);
-		} else {
+		} else if (data.EMG.id != -1) {
 			printf("EMG UNUSED");
 		}
 		printf("\n");
@@ -728,8 +734,7 @@ void* printSaveDataThread() {
 
 void endSession() {
 
-	//stop EMG data collection
-	data.controlValues[3] = 0;
+	data.controlValues[3] = 0; //stop EMG data collection
 	while (data.controlValues[4] != 2) {}; //wait for print thread to be done
 
 	for (int i = 0; i < 5; i++) {

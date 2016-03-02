@@ -6,7 +6,7 @@
  * 	requirements. Also designed to return EMG information every 200ms.
  *
  * Usage:
- * 	Compile with: gcc -o structureTest structureTest.c quickDevice.c slowDevice.c -pthread -std=gnu99 -Wall -Wextra
+ * 	Compile with: gcc -o structureTestSR structureTestSR.c quickDevice.c slowDevice.c -pthread -std=gnu99 -Wall -Wextra
  *
  *  Start recording with sudo ./structureTest, stop with ctrl-d.
  */
@@ -562,7 +562,7 @@ void* printSaveDataThread() {
 				printf("%i\t", data.EMG.read[i]);
 			}
 			fwrite(data.EMG.read, sizeof(float), sizeof(data.Force.read)/sizeof(float), data.outFile);
-		} else {
+		} else if (data.EMG.id != -1){
 			printf("EMG UNUSED");
 		}
 		printf("\t");
