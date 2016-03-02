@@ -106,7 +106,7 @@ int main(void) {
 	struct timeval curr;
 	struct timeval temp;
 
-	setpriority();
+	setPriority();
 
 	gettimeofday(&curr, NULL); //update current time
 
