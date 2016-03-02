@@ -195,7 +195,7 @@ int main(void) {
 		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
 
 		//for testing and not locking up pi
-		if (data.time > 200) {
+		if (data.time > 420) {
 			endSession();
 			return 1;
 		}
@@ -632,108 +632,108 @@ void* printSaveDataThread() {
 		}
 		fwrite(" ", sizeof(char), 1, data.outFile);
 
-//		//IMU
-//		if (data.IMU.id != -1) {
-//			//IMU missed read flag
-//			if (IMUError == -1) {
-//				//this sensor had a missed read, mark it with an asterisk
-//				printf("*");
-//				fwrite("*", sizeof(char), 1, data.outFile);
-//			} else {
-//				//no missed read
-//				fwrite("=", sizeof(char), 1, data.outFile);
-//			}
-//			//save IMU data
-//			for (int i = 0; i < IMU_READ_SZ; i++) {
-//				printf("%f\t", data.IMU.read[i]);
-//			}
-//			fwrite(data.IMU.read, sizeof(float), sizeof(data.IMU.read)/sizeof(float), data.outFile);
-//		} else {
-//			printf("IMU UNUSED");
-//		}
-//		printf("\n");
-//		fwrite(" ", sizeof(char), 1, data.outFile);
-//
-//		//CyberGlove
-//		if (data.CyGl.id != -1) {
-//			//CyGl missed read flag
-//			if (CyGlError == -1) {
-//				//this sensor had a missed read, mark it with an asterisk
-//				printf("*");
-//				fwrite("*", sizeof(char), 1, data.outFile);
-//			} else {
-//				//no missed read
-//				fwrite("=", sizeof(char), 1, data.outFile);
-//			}
-//
-//			if (data.CyGl.WiredCyGl == 1) {
-//				for (int i = 0; i < WIRED_CYGL_READ_SZ; i++) {
-//					printf("%i\t", (int) data.CyGl.read[i]);
-//				}
-//				fwrite(data.CyGl.read, sizeof(int), WIRED_CYGL_READ_SZ, data.outFile);
-//			} else {
-//				for (int i = 0; i < WIRELESS_CYGL_READ_SZ; i++) {
-//					printf("%i\t", (int) data.CyGl.read[i]);
-//				}
-//				fwrite(data.CyGl.read, sizeof(int), WIRELESS_CYGL_READ_SZ, data.outFile);
-//			}
-//
-//		} else {
-//			printf("CyGl UNUSED");
-//		}
-//		printf("\n");
-//		fwrite(" ", sizeof(char), 1, data.outFile);
-//
-//		//Force Sensors
-//		if (data.Force.id != -1) {
-//			//Force missed read flag
-//			if (ForceError == -1) {
-//				//this sensor had a missed read, mark it with an asterisk
-//				printf("*");
-//				fwrite("*", sizeof(char), 1, data.outFile);
-//			} else {
-//				//no missed read
-//				fwrite("=", sizeof(char), 1, data.outFile);
-//			}
-//			//save force data
-//			for (int i = 0; i < FORCE_READ_SZ; i++) {
-//				printf("%f\t", data.Force.read[i]);
-//			}
-//			fwrite(data.Force.read, sizeof(int), sizeof(data.Force.read)/sizeof(int), data.outFile);
-//		} else {
-//			printf("Force UNUSED");
-//		}
-//		printf("\n");
-//		fwrite(" ", sizeof(char), 1, data.outFile);
-//
-//		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
-//			//EMG missed read flag
-//			if (EMGError == -1) {
-//				//this sensor had a missed read, mark it with an asterisk
-//				printf("*");
-//				fwrite("*", sizeof(char), 1, data.outFile);
-//			} else {
-//				//no missed read
-//				fwrite("=", sizeof(char), 1, data.outFile);
-//			}
-//			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
-//				printf("Read %i:   ", i + 1);
-//				for (int j = 0; j < EMG_READ_SZ; j++) {
-//					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
-//				}
-//				printf("\n");
-//			}
-//			printf("\n");
-//			fwrite(data.EMG.read, sizeof(float), sizeof(data.EMG.read)/sizeof(float), data.outFile);
-//		} else if (data.EMG.id == -1) {
-//			printf("EMG UNUSED");
-//		}
-//		printf("\n");
-//		fwrite(" ", sizeof(char), 1, data.outFile);
-//
-//		//terminate data collection period
-//		printf("\n");
-//		fwrite("\n", sizeof(char), 1, data.outFile);
+		//IMU
+		if (data.IMU.id != -1) {
+			//IMU missed read flag
+			if (IMUError == -1) {
+				//this sensor had a missed read, mark it with an asterisk
+				printf("*");
+				fwrite("*", sizeof(char), 1, data.outFile);
+			} else {
+				//no missed read
+				fwrite("=", sizeof(char), 1, data.outFile);
+			}
+			//save IMU data
+			for (int i = 0; i < IMU_READ_SZ; i++) {
+				printf("%f\t", data.IMU.read[i]);
+			}
+			fwrite(data.IMU.read, sizeof(float), sizeof(data.IMU.read)/sizeof(float), data.outFile);
+		} else {
+			printf("IMU UNUSED");
+		}
+		printf("\n");
+		fwrite(" ", sizeof(char), 1, data.outFile);
+
+		//CyberGlove
+		if (data.CyGl.id != -1) {
+			//CyGl missed read flag
+			if (CyGlError == -1) {
+				//this sensor had a missed read, mark it with an asterisk
+				printf("*");
+				fwrite("*", sizeof(char), 1, data.outFile);
+			} else {
+				//no missed read
+				fwrite("=", sizeof(char), 1, data.outFile);
+			}
+
+			if (data.CyGl.WiredCyGl == 1) {
+				for (int i = 0; i < WIRED_CYGL_READ_SZ; i++) {
+					printf("%i\t", (int) data.CyGl.read[i]);
+				}
+				fwrite(data.CyGl.read, sizeof(int), WIRED_CYGL_READ_SZ, data.outFile);
+			} else {
+				for (int i = 0; i < WIRELESS_CYGL_READ_SZ; i++) {
+					printf("%i\t", (int) data.CyGl.read[i]);
+				}
+				fwrite(data.CyGl.read, sizeof(int), WIRELESS_CYGL_READ_SZ, data.outFile);
+			}
+
+		} else {
+			printf("CyGl UNUSED");
+		}
+		printf("\n");
+		fwrite(" ", sizeof(char), 1, data.outFile);
+
+		//Force Sensors
+		if (data.Force.id != -1) {
+			//Force missed read flag
+			if (ForceError == -1) {
+				//this sensor had a missed read, mark it with an asterisk
+				printf("*");
+				fwrite("*", sizeof(char), 1, data.outFile);
+			} else {
+				//no missed read
+				fwrite("=", sizeof(char), 1, data.outFile);
+			}
+			//save force data
+			for (int i = 0; i < FORCE_READ_SZ; i++) {
+				printf("%f\t", data.Force.read[i]);
+			}
+			fwrite(data.Force.read, sizeof(int), sizeof(data.Force.read)/sizeof(int), data.outFile);
+		} else {
+			printf("Force UNUSED");
+		}
+		printf("\n");
+		fwrite(" ", sizeof(char), 1, data.outFile);
+
+		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
+			//EMG missed read flag
+			if (EMGError == -1) {
+				//this sensor had a missed read, mark it with an asterisk
+				printf("*");
+				fwrite("*", sizeof(char), 1, data.outFile);
+			} else {
+				//no missed read
+				fwrite("=", sizeof(char), 1, data.outFile);
+			}
+			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
+				printf("Read %i:   ", i + 1);
+				for (int j = 0; j < EMG_READ_SZ; j++) {
+					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+			fwrite(data.EMG.read, sizeof(float), sizeof(data.EMG.read)/sizeof(float), data.outFile);
+		} else if (data.EMG.id == -1) {
+			printf("EMG UNUSED");
+		}
+		printf("\n");
+		fwrite(" ", sizeof(char), 1, data.outFile);
+
+		//terminate data collection period
+		printf("\n");
+		fwrite("\n", sizeof(char), 1, data.outFile);
 
 		pthread_mutex_unlock(&threadLocks[4]);
 
