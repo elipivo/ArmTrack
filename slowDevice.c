@@ -93,9 +93,7 @@ int getSlowDeviceData(SlowDevice* slowDevice, double time) {
 				slowDevice->readBuffer1[i] = slowDevice->reads;
 			}
 
-	//		usleep(25000);
 			slowDevice->hasNewRead1 = 1;
-	//		return -1;
 			break;
 		case 1:
 			//read into readBuffer2 on odd reads
@@ -104,9 +102,8 @@ int getSlowDeviceData(SlowDevice* slowDevice, double time) {
 			for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
 				slowDevice->readBuffer2[i] = slowDevice->reads;
 			}
-	//		usleep(25000);
+
 			slowDevice->hasNewRead2 = 1;
-	//		return -1;
 			break;
 		}
 
@@ -114,9 +111,8 @@ int getSlowDeviceData(SlowDevice* slowDevice, double time) {
 		//allows manipulation of time process takes
 		do {
 			gettimeofday(&end, NULL);
-		} while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 < .025);
+		} while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 < .2);
 
-	//	fprintf(stderr, "Here 8\n");
 
 		return 1;
 }
