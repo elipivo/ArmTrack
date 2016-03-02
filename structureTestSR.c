@@ -562,7 +562,7 @@ void* printSaveDataThread() {
 				printf("%i\t", data.EMG.read[i]);
 			}
 			fwrite(data.EMG.read, sizeof(float), sizeof(data.Force.read)/sizeof(float), data.outFile);
-		} else if (data.EMG.id != -1){
+		} else if (data.EMG.id == -1){
 			printf("EMG UNUSED");
 		}
 		printf("\t");
