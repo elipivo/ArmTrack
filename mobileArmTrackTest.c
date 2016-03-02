@@ -165,6 +165,8 @@ int main(void) {
 	struct timeval curr;
 	struct timeval temp;
 
+	setPriority();
+
 	gettimeofday(&curr, NULL); //update current time
 
 	while(digitalRead(SWITCH) == 1) {
@@ -552,6 +554,7 @@ void checkSensors() {
 
 void* printSaveDataThread() {
 
+	setPriority();
 
 	int IMUError, CyGlError, ForceError, EMGError;
 
