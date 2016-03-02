@@ -101,13 +101,6 @@ int initializeWirelessCyGl(CyGl* CyGl) {
 		fcntl (tempID, F_SETFL, O_RDWR | O_NOCTTY);
 		CyGl->id = tempID;
 		CyGl->WiredCyGl = 0;
-
-		//start stream
-		if (write(CyGl->id, "S", 1) != 1) {
-			fprintf(stderr, "CyberGlove Error: Couldn't request reading.\n");
-			return -1;
-		}
-
 		return CyGl->id;
 	} else {
 		return -1;
@@ -319,7 +312,7 @@ int getCyGlData(CyGl* CyGl, double time) {
 		//read into readBuffer1 on even reads
 		CyGl->readBuffer1Time = time;
 
-//		//request reading
+		//request reading with G
 		if (write(CyGl->id, "G", 1) != 1) {
 			fprintf(stderr, "CyberGlove Error: Couldn't request reading.\n");
 			return -1;
@@ -359,7 +352,7 @@ int getCyGlData(CyGl* CyGl, double time) {
 		//read into readBuffer2 on odd reads
 		CyGl->readBuffer2Time = time;
 
-//		//request reading
+		//request reading with G
 		if (write(CyGl->id, "G", 1) != 1) {
 			fprintf(stderr, "CyberGlove Error: Couldn't request reading.\n");
 			return -1;
