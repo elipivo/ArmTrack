@@ -197,7 +197,7 @@ int main(void) {
 		}
 
 		//for testing and not locking up pi
-		if (data.time > 15) {
+		if (data.time > 200) {
 			endSession();
 			return 1;
 		}
