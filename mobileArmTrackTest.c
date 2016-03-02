@@ -197,7 +197,7 @@ int main(void) {
 		}
 
 		//for testing and not locking up pi
-		if (data.time > 60) {
+		if (data.time > 15) {
 			endSession();
 			return 1;
 		}
@@ -745,10 +745,6 @@ void* printSaveDataThread() {
 			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "ab");
 		}
 
-		if (data.time > 15) {
-			endSession();
-			return 1;
-		}
 	}
 
 	pthread_exit(NULL);
