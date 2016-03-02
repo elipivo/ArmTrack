@@ -111,7 +111,7 @@ int getSlowDeviceData(SlowDevice* slowDevice, double time) {
 		//allows manipulation of time process takes
 		do {
 			gettimeofday(&end, NULL);
-		} while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 < .2);
+		} while ((end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) * .000001 < .202);
 
 
 		return 1;

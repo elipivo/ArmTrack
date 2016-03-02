@@ -615,9 +615,23 @@ void* printSaveDataThread() {
 			fwrite("*", sizeof(char), 1, data.outFile);
 		}
 
-		//write time
-		printf("%f\n", data.time);
-		fwrite(&time, sizeof(double), 1, data.outFile);
+		//write time from one of connected sensors if possible
+		if (data.IMU.id != -1) {
+			printf("%5f\t", data.IMU.readTime);
+			fwrite(&data.IMU.readTime, sizeof(double), 1, data.outFile);
+		} else if (data.CyGl.id != -1) {
+			printf("%5f\t", data.CyGl.readTime);
+			fwrite(&data.CyGl.readTime, sizeof(double), 1, data.outFile);
+		} else if (data.Force.id != -1) {
+			printf("%5f\t", data.Force.readTime);
+			fwrite(&data.Force.readTime, sizeof(double), 1, data.outFile);
+		} else if (data.EMG.id != -1) {
+			printf("%5f\t", data.EMG.readTime);
+			fwrite(&data.EMG.readTime, sizeof(double), 1, data.outFile);
+		} else {
+			printf("%5f\t", data.time);
+			fwrite(&data.time, sizeof(double), 1, data.outFile);
+		}
 		fwrite(" ", sizeof(char), 1, data.outFile);
 
 		//IMU
