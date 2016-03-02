@@ -744,6 +744,11 @@ void* printSaveDataThread() {
 			fclose(data.outFile);
 			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "ab");
 		}
+
+		if (data.time > 15) {
+			endSession();
+			return 1;
+		}
 	}
 
 	pthread_exit(NULL);
