@@ -165,7 +165,7 @@ int main(void) {
 	struct timeval curr;
 	struct timeval temp;
 
-	setPriority();
+//	setPriority();
 
 	gettimeofday(&curr, NULL); //update current time
 
@@ -207,21 +207,21 @@ int main(void) {
 }
 
 void setPriority() {
-//	//should be careful with this!
-//	//make data collection thread a time critical thread
-//	struct sched_param param;
-//	param.sched_priority = sched_get_priority_max(SCHED_RR);
-//	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
-//		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
-//		fprintf(stderr, "*Remember to run as root.*\n");
-//		exit(1);
-//	}
-//
-//	//lock process in memory
-//	if (mlockall(MCL_FUTURE) != 0) {
-//		fprintf(stderr, "ERROR: Couldn't lock process in memory.\n");
-//		exit(1);
-//	}
+	//should be careful with this!
+	//make data collection thread a time critical thread
+	struct sched_param param;
+	param.sched_priority = sched_get_priority_max(SCHED_RR);
+	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
+		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
+		fprintf(stderr, "*Remember to run as root.*\n");
+		exit(1);
+	}
+
+	//lock process in memory
+	if (mlockall(MCL_FUTURE) != 0) {
+		fprintf(stderr, "ERROR: Couldn't lock process in memory.\n");
+		exit(1);
+	}
 }
 
 void startSensors() {
@@ -552,7 +552,7 @@ void checkSensors() {
 
 void* printSaveDataThread() {
 
-	setPriority();
+//	setPriority();
 
 	int IMUError, CyGlError, ForceError, EMGError;
 
