@@ -552,7 +552,7 @@ void checkSensors() {
 
 void* printSaveDataThread() {
 
-//	setPriority();
+	setPriority();
 
 	int IMUError, CyGlError, ForceError, EMGError;
 
