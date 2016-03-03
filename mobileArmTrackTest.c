@@ -98,7 +98,7 @@ typedef struct {
 #define RED_LED 29
 #define SWITCH 27
 
-void setPriority();
+void setPriority(int priority);
 void startSensors();
 void startThreads();
 void getData();
@@ -165,7 +165,7 @@ int main(void) {
 	struct timeval curr;
 	struct timeval temp;
 
-//	setPriority();
+	setPriority(90);
 
 	gettimeofday(&curr, NULL); //update current time
 
@@ -206,11 +206,11 @@ int main(void) {
 	return 1;
 }
 
-void setPriority() {
+void setPriority(int priority) {
 	//should be careful with this!
 	//make data collection thread a time critical thread
 	struct sched_param param;
-	param.sched_priority = sched_get_priority_max(SCHED_RR);
+	param.sched_priority = priority;
 	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
 		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
 		fprintf(stderr, "*Remember to run as root.*\n");
@@ -406,7 +406,7 @@ void getData() {
 void* IMUThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[0]);
@@ -421,7 +421,7 @@ void* IMUThread() {
 void* CyGlThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[1]);
@@ -436,7 +436,7 @@ void* CyGlThread() {
 void* ForceThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[2]);
@@ -451,7 +451,7 @@ void* ForceThread() {
 void* EMGThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(96);
 
 	while (1 == 1) {
 		if (data.controlValues[3] != 0) {
@@ -552,7 +552,7 @@ void checkSensors() {
 
 void* printSaveDataThread() {
 
-	setPriority();
+	setPriority(80);
 
 	int IMUError, CyGlError, ForceError, EMGError;
 
