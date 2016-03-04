@@ -130,7 +130,7 @@ int main(void) {
 	pinMode(GREEN_LED, OUTPUT);
 	pinMode(RED_LED, OUTPUT);
 	pinMode(SWITCH, INPUT);
-	pullUpDnControl(SWITCH, PUD_UP);
+	pullUpDnControl(SWITCH, PUD_DOWN);
 
 	data.readsSinceEMG = 7;
 
@@ -165,7 +165,7 @@ int main(void) {
 	struct timeval curr;
 	struct timeval temp;
 
-	setPriority(90);
+//	setPriority(90);
 
 	gettimeofday(&curr, NULL); //update current time
 
@@ -451,7 +451,7 @@ void* ForceThread() {
 void* EMGThread() {
 
 	//make data collection thread a time critical thread
-	setPriority(96);
+	setPriority(95);
 
 	while (1 == 1) {
 		if (data.controlValues[3] != 0) {
@@ -552,7 +552,7 @@ void checkSensors() {
 
 void* printSaveDataThread() {
 
-	setPriority(80);
+//	setPriority(80);
 
 	int IMUError, CyGlError, ForceError, EMGError;
 
