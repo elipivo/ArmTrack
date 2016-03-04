@@ -130,7 +130,7 @@ int main(void) {
 	pinMode(GREEN_LED, OUTPUT);
 	pinMode(RED_LED, OUTPUT);
 	pinMode(SWITCH, INPUT);
-	pullUpDnControl(SWITCH, PUD_DOWN);
+	pullUpDnControl(SWITCH, PUD_UP);
 
 	data.readsSinceEMG = 7;
 
