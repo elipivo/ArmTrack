@@ -672,12 +672,11 @@ void* printSaveDataThread() {
 			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
 				for (int j = 0; j < EMG_READ_SZ; j++) {
 					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
-					fprintf(data.outFile, "%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+					fprintf(data.EMGFile, "%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
 				}
 				printf("\n");
-				fprintf("\n");
+				fprintf(data.EMGFile, "\n");
 			}
-			printf("\n");
 		} else if (data.EMG.id == -1) {
 			printf("EMG UNUSED");
 		}

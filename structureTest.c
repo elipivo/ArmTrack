@@ -548,7 +548,6 @@ void* printSaveDataThread() {
 		}
 		//terminate data collection period
 		printf("\n");
-		fprintf(data.outFile, "\n");
 
 		pthread_mutex_unlock(&threadLocks[4]);
 
