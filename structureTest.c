@@ -479,19 +479,19 @@ void* printSaveDataThread() {
 
 		//write time from one of connected sensors if possible
 		if (data.IMU.id != -1) {
-			printf("%5f\n", data.IMU.readTime);
+			printf("%5f\t", data.IMU.readTime);
 			fprintf(data.outFile, "%5f\t", data.IMU.readTime);
 		} else if (data.CyGl.id != -1) {
-			printf("%5f\n", data.CyGl.readTime);
+			printf("%5f\t", data.CyGl.readTime);
 			fprintf(data.outFile, "%5f\t", data.CyGl.readTime);
 		} else if (data.Force.id != -1) {
-			printf("%5f\n", data.Force.readTime);
+			printf("%5f\t", data.Force.readTime);
 			fprintf(data.outFile, "%5f\t", data.Force.readTime);
 		} else if (data.EMG.id != -1) {
-			printf("%5f\n", data.EMG.readTime);
+			printf("%5f\t", data.EMG.readTime);
 			fprintf(data.outFile, "%5f\t", data.EMG.readTime);
 		} else {
-			printf("%5f\n", data.time);
+			printf("%5f\t", data.time);
 			fprintf(data.outFile, "%5f\t", data.time);
 		}
 
@@ -506,7 +506,6 @@ void* printSaveDataThread() {
 			printf("%i\t", data.IMU.read[i]);
 			fprintf(data.outFile, "%i\t", data.IMU.read[i]);
 		}
-		printf("\n");
 
 		//CyberGlove
 		//CyGl missed read flag
@@ -518,7 +517,6 @@ void* printSaveDataThread() {
 			printf("%i\t", (int) data.CyGl.read[i]);
 			fprintf(data.outFile, "%i\t", (int) data.CyGl.read[i]);
 		}
-		printf("\n");
 
 		//Force Sensors
 		//Force missed read flag
@@ -531,7 +529,6 @@ void* printSaveDataThread() {
 			printf("%i\t", data.Force.read[i]);
 			fprintf(data.outFile, "%i\t", data.Force.read[i]);
 		}
-		printf("\n");
 
 		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
 			//EMG missed read flag
@@ -542,17 +539,16 @@ void* printSaveDataThread() {
 			for (int i = 0; i < SLOWDEVICE_READS_PER_CYCLE; i++) {
 				for (int j = 0; j < SLOWDEVICE_READ_SZ; j++) {
 					printf("%i\t", data.EMG.read[i * SLOWDEVICE_READ_SZ + j]);
-					fprintf(data.outFile, "%i\t", data.EMG.read[i * SLOWDEVICE_READ_SZ + j]);
+					fprintf(data.EMGFile, "%i\t", data.EMG.read[i * SLOWDEVICE_READ_SZ + j]);
 				}
-				printf("\n");
-				fprintf(data.outFile, "\n");
+				fprintf(data.EMGFile, "\n");
 			}
-			printf("\n");
 		} else if (data.EMG.id == -1) {
 			printf("EMG UNUSED");
 		}
 		//terminate data collection period
 		printf("\n");
+		fprintf(outFile, "\n");
 
 		pthread_mutex_unlock(&threadLocks[4]);
 
