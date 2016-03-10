@@ -565,6 +565,10 @@ void* printSaveDataThread() {
 
 void endSession() {
 
+	data.controlValues[3] = 0; //stop EMG data collection
+	while (data.controlValues[4] != 2) {}; //wait for print thread to be done
+
+
 	//ensure the print thread is allowed to complete
 	usleep(30000);
 	for (int i = 0; i < 5; i++) {
@@ -573,12 +577,14 @@ void endSession() {
 		pthread_cond_destroy(&threadSignals[i]);
 	}
 
-	//close and save file
+	//close and save files
 	fclose(data.outFile);
+	fclose(data.EMGFile);
 
 	//upload file to DropBox (hold green and red LED on during upload)
 	fprintf(stderr, "Uploading to dropbox...\t");
-	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.bin /");
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.txt /");
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt /");
 	fprintf(stderr, "done.\n");
 
 	//report Error percentage
