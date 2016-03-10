@@ -689,7 +689,7 @@ void* printSaveDataThread() {
 			fclose(data.outFile);
 			fclose(data.EMGFile);
 			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "a");
-			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a")
+			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a");
 		}
 
 	}
