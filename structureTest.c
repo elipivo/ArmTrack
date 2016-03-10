@@ -542,7 +542,7 @@ void* printSaveDataThread() {
 			for (int i = 0; i < SLOWDEVICE_READS_PER_CYCLE; i++) {
 				for (int j = 0; j < SLOWDEVICE_READ_SZ; j++) {
 					printf("%i\t", data.EMG.read[i * SLOWDEVICE_READ_SZ + j]);
-					fprintf(data.outFile, "%i\t", data.EMG.read[i * EMG_READ_SZ + j]);
+					fprintf(data.outFile, "%i\t", data.EMG.read[i * SLOWDEVICE_READ_SZ + j]);
 				}
 				printf("\n");
 				fprintf(data.outFile, "\n");
