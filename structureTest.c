@@ -555,6 +555,7 @@ void* printSaveDataThread() {
 		//save file every 60 seconds
 		if ((int) data.time % 60 == 0) {
 			fclose(data.outFile);
+			fclose(data.EMGFile);
 			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "a");
 			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a");
 		}
