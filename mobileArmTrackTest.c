@@ -167,7 +167,7 @@ int main(void) {
 	struct timeval curr;
 	struct timeval temp;
 
-//	setPriority(90);
+	setPriority(90);
 
 	gettimeofday(&curr, NULL); //update current time
 
@@ -554,7 +554,7 @@ void checkSensors() {
 
 void* printSaveDataThread() {
 
-//	setPriority(80);
+	setPriority(80);
 
 	int IMUError, CyGlError, ForceError, EMGError;
 
