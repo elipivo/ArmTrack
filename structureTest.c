@@ -33,6 +33,7 @@ typedef struct {
 	QuickDevice Force;
 	SlowDevice EMG;
 
+	int readsSinceEMG;
 	double time;
 	int errors;
 	int reads;
@@ -51,10 +52,12 @@ typedef struct {
 	 * 2: Ready to accept a read or print request.
 	 */
 	int controlValues[5];
-	FILE* outFile;
+
+	FILE* EMGFile; //holds just EMG data
+	FILE* outFile; //holds time stamped IMU, CyGl, Force sensor info
 } Data;
 
-void setPriority();
+void setPriority(int priority);
 void startSensors();
 void startThreads();
 void getData();
@@ -85,6 +88,8 @@ int main(void) {
 	flags = fcntl(fileno(stdin), F_SETFL, flags);
 	char userInput;
 
+	data.readsSinceEMG = 0;
+
 //	setPriority();
 
 	fprintf(stderr, "Connecting to sensors.\n");
@@ -97,7 +102,8 @@ int main(void) {
 
 	fprintf(stderr, "Collecting data.\n");
 
-	data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "wb");
+	data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "w");
+	data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "w");
 	data.errors = 0;
 	data.reads = 0;
 
@@ -125,11 +131,10 @@ int main(void) {
 		checkSensors();
 
 		//wait for 25ms cycle length
-		if (data.EMG.id == -1) {
-			do {
-				gettimeofday(&temp, NULL);
-			} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
-		}
+		do {
+			gettimeofday(&temp, NULL);
+		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
+
 
 		if (data.time > 13) {
 			endSession();
@@ -142,11 +147,11 @@ int main(void) {
 	return 1;
 }
 
-void setPriority() {
+void setPriority(int priority) {
 	//should be careful with this!
 	//make data collection thread a time critical thread
 	struct sched_param param;
-	param.sched_priority = sched_get_priority_max(SCHED_RR);
+	param.sched_priority = priority;
 	if (sched_setscheduler(0, SCHED_RR, &param) != 0) {
 		fprintf(stderr, "ERROR: Data Collection Thread Priority not set.\n");
 		fprintf(stderr, "*Remember to run as root.*\n");
@@ -234,7 +239,7 @@ void startThreads() {
 		pthread_mutex_init(&threadLocks[3], NULL);
 		pthread_cond_init(&threadSignals[3], NULL);
 
-		data.controlValues[3] = 1; //start EMG
+		data.controlValues[3] = 0; //stop EMG
 
 		if (pthread_create(&threads[3], NULL, EMGThread, NULL) != 0) {
 			fprintf(stderr, "ERROR: Couldn't start EMG data collection thread.\n");
@@ -251,6 +256,8 @@ void startThreads() {
 
 	//ensure threads are ready
 	usleep(30000);
+
+	data.controlValues[3] = 1; //start EMG
 }
 
 void getData() {
@@ -284,9 +291,13 @@ void getData() {
 	if (data.Force.id != -1) {
 		while (data.controlValues[2] != 2) {}
 	}
-	if (data.EMG.id != -1) {
+
+	data.readsSinceEMG++;
+	if (data.EMG.id != -1 && data.readsSinceEMG == 8) {
+		//once every 8 reads, it will wait for new EMG data
 		while (data.controlValues[3] != 2) {}
 		data.controlValues[3] = 1;
+		data.readsSinceEMG = 0;
 	}
 
 }
@@ -294,7 +305,7 @@ void getData() {
 void* IMUThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[0]);
@@ -309,7 +320,7 @@ void* IMUThread() {
 void* CyGlThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[1]);
@@ -324,7 +335,7 @@ void* CyGlThread() {
 void* ForceThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		pthread_mutex_lock(&threadLocks[2]);
@@ -339,7 +350,7 @@ void* ForceThread() {
 void* EMGThread() {
 
 	//make data collection thread a time critical thread
-	setPriority();
+	setPriority(95);
 
 	while (1 == 1) {
 		if (data.controlValues[3] != 0) {
@@ -352,7 +363,7 @@ void* EMGThread() {
 
 void checkSensors() {
 
-	if (data.IMU.consecutiveErrors > 20) {
+	if (data.IMU.id != -1 &&  data.IMU.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the IMU
 		fprintf(stderr, "ERROR: Too many consecutive missed reads.\n");
@@ -366,7 +377,7 @@ void checkSensors() {
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
 	}
-	if (data.CyGl.consecutiveErrors > 20) {
+	if (data.CyGl.id != -1 && data.CyGl.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the CyberGlove
 		fprintf(stderr, "ERROR: Too many consecutive missed reads.\n");
@@ -380,7 +391,7 @@ void checkSensors() {
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
 	}
-	if (data.Force.consecutiveErrors > 20) {
+	if (data.Force.id != -1 && data.Force.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the Force sensors
 		fprintf(stderr, "ERROR: Too many consecutive missed reads.\n");
@@ -394,7 +405,7 @@ void checkSensors() {
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
 	}
-	if (data.EMG.consecutiveErrors > 20) {
+	if (data.EMG.id != -1 && data.EMG.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the EMG
 
@@ -438,8 +449,6 @@ void* printSaveDataThread() {
 		 * ...
 		 */
 
-		//unused lines are labeled "SENSOR UNUSED"
-
 		data.reads++;
 
 		if (data.IMU.id != -1) {
@@ -457,124 +466,101 @@ void* printSaveDataThread() {
 		} else {
 			ForceError = 1; //no error
 		}
-		if (data.EMG.id != -1) {
-			EMGError = updateSlowDeviceRead(&data.EMG);
+		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
+			EMGError = updateEMGRead(&data.EMG);
 		} else {
-			EMGError = 1; //no error
+			EMGError = 1;
 		}
 
-		if (IMUError != -1 && CyGlError != -1 && ForceError != -1 && EMGError != -1) {
-			//no missed read
-			fwrite("=", sizeof(char), 1, data.outFile);
-		} else {
-			//report missed read
-			printf("*");
-			fwrite("*", sizeof(char), 1, data.outFile);
+		if (IMUError == -1 || CyGlError == -1 || ForceError == -1 || EMGError == -1) {
 			data.errors++;
+			printf("*");
 		}
 
-		//write time
-		printf("%5f\t", data.time);
-		fwrite(&time, sizeof(double), 1, data.outFile);
-		fwrite(" ", sizeof(char), 1, data.outFile);
+		//write time from one of connected sensors if possible
+		if (data.IMU.id != -1) {
+			printf("%5f\n", data.IMU.readTime);
+			fprintf(data.outFile, "%5f\t", data.IMU.readTime);
+		} else if (data.CyGl.id != -1) {
+			printf("%5f\n", data.CyGl.readTime);
+			fprintf(data.outFile, "%5f\t", data.CyGl.readTime);
+		} else if (data.Force.id != -1) {
+			printf("%5f\n", data.Force.readTime);
+			fprintf(data.outFile, "%5f\t", data.Force.readTime);
+		} else if (data.EMG.id != -1) {
+			printf("%5f\n", data.EMG.readTime);
+			fprintf(data.outFile, "%5f\t", data.EMG.readTime);
+		} else {
+			printf("%5f\n", data.time);
+			fprintf(data.outFile, "%5f\t", data.time);
+		}
 
 		//IMU
-		if (data.IMU.id != -1) {
-			//IMU missed read flag
-			if (IMUError == -1) {
-				//this sensor had a missed read, mark it with an asterisk
-				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
-			}
-			//save IMU data
-			for (int i = 0; i < QUICKDEVICE_READ_SZ; i++) {
-				printf("%i\t", data.IMU.read[i]);
-			}
-			fwrite(data.IMU.read, sizeof(float), sizeof(data.IMU.read)/sizeof(float), data.outFile);
-		} else {
-			printf("IMU UNUSED");
+		//IMU missed read flag
+		if (IMUError == -1) {
+			//this sensor had a missed read, mark it with an asterisk
+			printf("*");
 		}
-		printf("\t");
-		fwrite(" ", sizeof(char), 1, data.outFile);
+		//save IMU data
+		for (int i = 0; i < IMU_READ_SZ; i++) {
+			printf("%f\t", data.IMU.read[i]);
+			fprintf(data.outFile, "%f\t", data.IMU.read[i]);
+		}
+		printf("\n");
 
 		//CyberGlove
-		if (data.CyGl.id != -1) {
-			//CyGl missed read flag
-			if (CyGlError == -1) {
-				//this sensor had a missed read, mark it with an asterisk
-				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
-			}
-			//save CyGl data
-			for (int i = 0; i < QUICKDEVICE_READ_SZ; i++) {
-				printf("%i\t", data.CyGl.read[i]);
-			}
-			fwrite(data.CyGl.read, sizeof(int), sizeof(data.CyGl.read)/sizeof(int), data.outFile);
-		} else {
-			printf("CyGl UNUSED");
+		//CyGl missed read flag
+		if (CyGlError == -1) {
+			//this sensor had a missed read, mark it with an asterisk
+			printf("*");
 		}
-		printf("\t");
-		fwrite(" ", sizeof(char), 1, data.outFile);
+		for (int i = 0; i < WIRED_CYGL_READ_SZ; i++) {
+			printf("%i\t", (int) data.CyGl.read[i]);
+			fprintf(data.outFile, "%i\t", (int) data.CyGl.read[i]);
+		}
+		printf("\n");
 
 		//Force Sensors
-		if (data.Force.id != -1) {
-			//Force missed read flag
-			if (ForceError == -1) {
-				//this sensor had a missed read, mark it with an asterisk
-				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
-			}
-			//save force data
-			for (int i = 0; i < QUICKDEVICE_READ_SZ; i++) {
-				printf("%i\t", data.Force.read[i]);
-			}
-			fwrite(data.Force.read, sizeof(int), sizeof(data.Force.read)/sizeof(int), data.outFile);
-		} else {
-			printf("Force UNUSED");
+		//Force missed read flag
+		if (ForceError == -1) {
+			//this sensor had a missed read, mark it with an asterisk
+			printf("*");
 		}
-		printf("\t");
-		fwrite(" ", sizeof(char), 1, data.outFile);
+		//save force data
+		for (int i = 0; i < FORCE_READ_SZ; i++) {
+			printf("%f\t", data.Force.read[i]);
+			fprintf(data.outFile, "%f\t", data.Force.read[i]);
+		}
+		printf("\n");
 
-		if (data.EMG.id != -1) {
+		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
 			//EMG missed read flag
 			if (EMGError == -1) {
 				//this sensor had a missed read, mark it with an asterisk
 				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
 			}
-			//save EMG data
-			for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
-				printf("%i\t", data.EMG.read[i]);
+			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
+				for (int j = 0; j < EMG_READ_SZ; j++) {
+					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+					fprintf(data.outFile, "%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+				}
+				printf("\n");
+				fprintf(data.outFile, "\n");
 			}
-			fwrite(data.EMG.read, sizeof(float), sizeof(data.Force.read)/sizeof(float), data.outFile);
-		} else {
+			printf("\n");
+		} else if (data.EMG.id == -1) {
 			printf("EMG UNUSED");
 		}
-		printf("\t");
-		fwrite(" ", sizeof(char), 1, data.outFile);
-
 		//terminate data collection period
 		printf("\n");
-		fwrite("\n", sizeof(char), 1, data.outFile);
 
 		pthread_mutex_unlock(&threadLocks[4]);
 
 		//save file every 60 seconds
 		if ((int) data.time % 60 == 0) {
 			fclose(data.outFile);
-			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "ab");
+			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "a");
+			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a")
 		}
 	}
 

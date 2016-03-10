@@ -91,7 +91,8 @@ typedef struct {
 	 * 2: Ready to accept a read or print request.
 	 */
 	int controlValues[5];
-	FILE* outFile;
+	FILE* EMGFile; //holds just EMG data
+	FILE* outFile; //holds time stamped IMU, CyGl, Force sensor info
 } Data;
 
 #define GREEN_LED 28
@@ -132,7 +133,7 @@ int main(void) {
 	pinMode(SWITCH, INPUT);
 	pullUpDnControl(SWITCH, PUD_UP);
 
-	data.readsSinceEMG = 7;
+	data.readsSinceEMG = 0;
 
 	fprintf(stderr, "Connecting to sensors.\n");
 
@@ -157,7 +158,8 @@ int main(void) {
 
 	fprintf(stderr, "Collecting data.\n");
 
-	data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "wb");
+	data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "w");
+	data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "w");
 	data.errors = 0;
 	data.reads = 0;
 
@@ -278,8 +280,6 @@ void startSensors() {
 		usleep(100000); //.1 sec
 	}
 
-	data.EMG.id = -1;
-
 	if (initializeEMG(&data.EMG) != -1) {
 		fprintf(stderr, "EMG initialized.\n");
 		//blink GREEN led if EMG did connect
@@ -338,7 +338,7 @@ void startThreads() {
 		pthread_mutex_init(&threadLocks[3], NULL);
 		pthread_cond_init(&threadSignals[3], NULL);
 
-		data.controlValues[3] = 1; //start EMG
+		data.controlValues[3] = 0; //stop EMG
 
 		if (pthread_create(&threads[3], NULL, EMGThread, NULL) != 0) {
 			fprintf(stderr, "ERROR: Couldn't start EMG data collection thread.\n");
@@ -355,6 +355,8 @@ void startThreads() {
 
 	//ensure threads are ready
 	usleep(30000);
+
+	data.controlValues[3] = 1; //start EMG
 }
 
 void getData() {
@@ -574,8 +576,6 @@ void* printSaveDataThread() {
 		 * ...
 		 */
 
-		//unused lines are labeled "SENSOR UNUSED"
-
 		data.reads++;
 
 		if (data.IMU.id != -1) {
@@ -599,148 +599,98 @@ void* printSaveDataThread() {
 			EMGError = 1;
 		}
 
-		if (IMUError != -1 && CyGlError != -1 && ForceError != -1 && EMGError != -1) {
-			//no missed read
-			fwrite("=", sizeof(char), 1, data.outFile);
-		} else {
+		if (IMUError == -1 || CyGlError == -1 || ForceError == -1 || EMGError == -1) {
 			//report missed read
-
 			digitalWrite(GREEN_LED, 0); //turn on red LED due to a missed read
 			digitalWrite(RED_LED, 1);
-
 			data.errors++;
 			printf("*");
-			fwrite("*", sizeof(char), 1, data.outFile);
 		}
 
 		//write time from one of connected sensors if possible
 		if (data.IMU.id != -1) {
 			printf("%5f\n", data.IMU.readTime);
-			fwrite(&data.IMU.readTime, sizeof(double), 1, data.outFile);
+			fprintf(data.outFile, "%5f\t", data.IMU.readTime);
 		} else if (data.CyGl.id != -1) {
 			printf("%5f\n", data.CyGl.readTime);
-			fwrite(&data.CyGl.readTime, sizeof(double), 1, data.outFile);
+			fprintf(data.outFile, "%5f\t", data.CyGl.readTime);
 		} else if (data.Force.id != -1) {
 			printf("%5f\n", data.Force.readTime);
-			fwrite(&data.Force.readTime, sizeof(double), 1, data.outFile);
+			fprintf(data.outFile, "%5f\t", data.Force.readTime);
 		} else if (data.EMG.id != -1) {
 			printf("%5f\n", data.EMG.readTime);
-			fwrite(&data.EMG.readTime, sizeof(double), 1, data.outFile);
+			fprintf(data.outFile, "%5f\t", data.EMG.readTime);
 		} else {
 			printf("%5f\n", data.time);
-			fwrite(&data.time, sizeof(double), 1, data.outFile);
+			fprintf(data.outFile, "%5f\t", data.time);
 		}
-		fwrite(" ", sizeof(char), 1, data.outFile);
 
 		//IMU
-		if (data.IMU.id != -1) {
-			//IMU missed read flag
-			if (IMUError == -1) {
-				//this sensor had a missed read, mark it with an asterisk
-				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
-			}
-			//save IMU data
-			for (int i = 0; i < IMU_READ_SZ; i++) {
-				printf("%f\t", data.IMU.read[i]);
-			}
-			fwrite(data.IMU.read, sizeof(float), sizeof(data.IMU.read)/sizeof(float), data.outFile);
-		} else {
-			printf("IMU UNUSED");
+		//IMU missed read flag
+		if (IMUError == -1) {
+			//this sensor had a missed read, mark it with an asterisk
+			printf("*");
+		}
+		//save IMU data
+		for (int i = 0; i < IMU_READ_SZ; i++) {
+			printf("%f\t", data.IMU.read[i]);
+			fprintf(data.outFile, "%f\t", data.IMU.read[i]);
 		}
 		printf("\n");
-		fwrite(" ", sizeof(char), 1, data.outFile);
 
 		//CyberGlove
-		if (data.CyGl.id != -1) {
-			//CyGl missed read flag
-			if (CyGlError == -1) {
-				//this sensor had a missed read, mark it with an asterisk
-				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
-			}
-
-			if (data.CyGl.WiredCyGl == 1) {
-				for (int i = 0; i < WIRED_CYGL_READ_SZ; i++) {
-					printf("%i\t", (int) data.CyGl.read[i]);
-				}
-				fwrite(data.CyGl.read, sizeof(int), WIRED_CYGL_READ_SZ, data.outFile);
-			} else {
-				for (int i = 0; i < WIRELESS_CYGL_READ_SZ; i++) {
-					printf("%i\t", (int) data.CyGl.read[i]);
-				}
-				fwrite(data.CyGl.read, sizeof(int), WIRELESS_CYGL_READ_SZ, data.outFile);
-			}
-
-		} else {
-			printf("CyGl UNUSED");
+		//CyGl missed read flag
+		if (CyGlError == -1) {
+			//this sensor had a missed read, mark it with an asterisk
+			printf("*");
+		}
+		for (int i = 0; i < WIRED_CYGL_READ_SZ; i++) {
+			printf("%i\t", (int) data.CyGl.read[i]);
+			fprintf(data.outFile, "%i\t", (int) data.CyGl.read[i]);
 		}
 		printf("\n");
-		fwrite(" ", sizeof(char), 1, data.outFile);
 
 		//Force Sensors
-		if (data.Force.id != -1) {
-			//Force missed read flag
-			if (ForceError == -1) {
-				//this sensor had a missed read, mark it with an asterisk
-				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
-			}
-			//save force data
-			for (int i = 0; i < FORCE_READ_SZ; i++) {
-				printf("%f\t", data.Force.read[i]);
-			}
-			fwrite(data.Force.read, sizeof(int), sizeof(data.Force.read)/sizeof(int), data.outFile);
-		} else {
-			printf("Force UNUSED");
+		//Force missed read flag
+		if (ForceError == -1) {
+			//this sensor had a missed read, mark it with an asterisk
+			printf("*");
+		}
+		//save force data
+		for (int i = 0; i < FORCE_READ_SZ; i++) {
+			printf("%f\t", data.Force.read[i]);
+			fprintf(data.outFile, "%f\t", data.Force.read[i]);
 		}
 		printf("\n");
-		fwrite(" ", sizeof(char), 1, data.outFile);
 
 		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
 			//EMG missed read flag
 			if (EMGError == -1) {
 				//this sensor had a missed read, mark it with an asterisk
 				printf("*");
-				fwrite("*", sizeof(char), 1, data.outFile);
-			} else {
-				//no missed read
-				fwrite("=", sizeof(char), 1, data.outFile);
 			}
 			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
-				printf("Read %i:   ", i + 1);
 				for (int j = 0; j < EMG_READ_SZ; j++) {
 					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+					fprintf(data.outFile, "%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
 				}
 				printf("\n");
+				fprintf("\n");
 			}
 			printf("\n");
-			fwrite(data.EMG.read, sizeof(float), sizeof(data.EMG.read)/sizeof(float), data.outFile);
 		} else if (data.EMG.id == -1) {
 			printf("EMG UNUSED");
 		}
 		printf("\n");
-		fwrite(" ", sizeof(char), 1, data.outFile);
-
-		//terminate data collection period
-		printf("\n");
-		fwrite("\n", sizeof(char), 1, data.outFile);
 
 		pthread_mutex_unlock(&threadLocks[4]);
 
 		//save file every 60 seconds
 		if ((int) data.time % 60 == 0) {
 			fclose(data.outFile);
-			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.bin", "ab");
+			fclose(data.EMGFile);
+			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "a");
+			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a")
 		}
 
 	}
@@ -759,12 +709,14 @@ void endSession() {
 		pthread_cond_destroy(&threadSignals[i]);
 	}
 
-	//close and save file
+	//close and save files
 	fclose(data.outFile);
+	fclose(data.EMGFile);
 
-	//upload file to DropBox (hold green and red LED on during upload)
+	//upload files to DropBox (hold green and red LED on during upload)
 	digitalWrite(GREEN_LED, 1); digitalWrite(RED_LED, 1);
 	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.bin /");
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackEMGData.bin /");
 	digitalWrite(GREEN_LED, 0); digitalWrite(RED_LED, 0);
 	sleep(1);
 
