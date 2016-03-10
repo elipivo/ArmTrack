@@ -14,19 +14,20 @@
 #include <sys/time.h>
 
 #define SLOWDEVICE_READ_SZ 1
+#define SLOWDEVICE_READS_PER_CYCLE 1
 
 typedef struct {
 	int id;
 
 	int bufferToUse;
 	int hasNewRead1;
-	int readBuffer1[SLOWDEVICE_READ_SZ];
+	int readBuffer1[SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE];
 	double readBuffer1Time;
 	int hasNewRead2;
-	int readBuffer2[SLOWDEVICE_READ_SZ];
+	int readBuffer2[SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE];
 	double readBuffer2Time;
 
-	int read[SLOWDEVICE_READ_SZ];
+	int read[SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE];
 	double readTime;
 
 	int reads;

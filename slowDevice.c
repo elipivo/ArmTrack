@@ -18,7 +18,7 @@ int initializeSlowDevice(SlowDevice* slowDevice) {
 	slowDevice->hasNewRead1 = 0;
 	slowDevice->hasNewRead2 = 0;
 	slowDevice->bufferToUse = 1;
-	for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
+	for (int i = 0; i < SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE; i++) {
 		slowDevice->readBuffer1[i] = 0;
 		slowDevice->readBuffer2[i] = 0;
 		slowDevice->read[i] = 0;
@@ -41,7 +41,7 @@ int reconnectSlowDevice(SlowDevice* slowDevice) {
 	slowDevice->hasNewRead1 = 0;
 	slowDevice->hasNewRead2 = 0;
 	slowDevice->bufferToUse = 1;
-	for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
+	for (int i = 0; i < SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE; i++) {
 		slowDevice->readBuffer1[i] = 0;
 		slowDevice->readBuffer2[i] = 0;
 		slowDevice->read[i] = 0;
@@ -89,7 +89,7 @@ int getSlowDeviceData(SlowDevice* slowDevice, double time) {
 		case 0:
 			//read into readBuffer1 on even reads
 			slowDevice->readBuffer1Time = time;
-			for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
+			for (int i = 0; i < SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE; i++) {
 				slowDevice->readBuffer1[i] = slowDevice->reads;
 			}
 
@@ -99,7 +99,7 @@ int getSlowDeviceData(SlowDevice* slowDevice, double time) {
 			//read into readBuffer2 on odd reads
 			slowDevice->readBuffer2Time = time;
 
-			for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
+			for (int i = 0; i < SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE; i++) {
 				slowDevice->readBuffer2[i] = slowDevice->reads;
 			}
 
@@ -125,7 +125,7 @@ int updateSlowDeviceRead(SlowDevice* slowDevice) {
 		slowDevice->readTime = slowDevice->readBuffer1Time;
 		if (slowDevice->hasNewRead2 == 1) {
 			//New data available in read buffer 2
-			memcpy(&slowDevice->read, &slowDevice->readBuffer2, SLOWDEVICE_READ_SZ * sizeof(int)); //update the read field
+			memcpy(&slowDevice->read, &slowDevice->readBuffer2, SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE * sizeof(int)); //update the read field
 			slowDevice->consecutiveErrors = 0; //data collection was successful
 			slowDevice->hasNewRead2 = 0;
 			return 1;
@@ -136,7 +136,7 @@ int updateSlowDeviceRead(SlowDevice* slowDevice) {
 		slowDevice->readTime = slowDevice->readBuffer2Time;
 		if (slowDevice->hasNewRead1 == 1) {
 			//New data available
-			memcpy(&slowDevice->read, &slowDevice->readBuffer1, SLOWDEVICE_READ_SZ * sizeof(int)); //update the read field
+			memcpy(&slowDevice->read, &slowDevice->readBuffer1, SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE * sizeof(int)); //update the read field
 			slowDevice->consecutiveErrors = 0; //data collection was successful
 			slowDevice->hasNewRead1 = 0;
 			return 1;
@@ -156,7 +156,7 @@ void closeSlowDevice(SlowDevice* slowDevice) {
 	slowDevice->id = -1;
 	slowDevice->hasNewRead1 = 0;
 	slowDevice->hasNewRead2 = 0;
-	for (int i = 0; i < SLOWDEVICE_READ_SZ; i++) {
+	for (int i = 0; i < SLOWDEVICE_READ_SZ * SLOWDEVICE_READS_PER_CYCLE; i++) {
 		slowDevice->readBuffer1[i] = 0;
 		slowDevice->readBuffer2[i] = 0;
 		slowDevice->read[i] = 0;

@@ -467,7 +467,7 @@ void* printSaveDataThread() {
 			ForceError = 1; //no error
 		}
 		if (data.EMG.id != -1 && data.readsSinceEMG == 0) {
-			EMGError = updateEMGRead(&data.EMG);
+			EMGError = updateSlowDeviceRead(&data.EMG);
 		} else {
 			EMGError = 1;
 		}
@@ -503,8 +503,8 @@ void* printSaveDataThread() {
 		}
 		//save IMU data
 		for (int i = 0; i < IMU_READ_SZ; i++) {
-			printf("%f\t", data.IMU.read[i]);
-			fprintf(data.outFile, "%f\t", data.IMU.read[i]);
+			printf("%i\t", data.IMU.read[i]);
+			fprintf(data.outFile, "%i\t", data.IMU.read[i]);
 		}
 		printf("\n");
 
@@ -528,8 +528,8 @@ void* printSaveDataThread() {
 		}
 		//save force data
 		for (int i = 0; i < FORCE_READ_SZ; i++) {
-			printf("%f\t", data.Force.read[i]);
-			fprintf(data.outFile, "%f\t", data.Force.read[i]);
+			printf("%i\t", data.Force.read[i]);
+			fprintf(data.outFile, "%i\t", data.Force.read[i]);
 		}
 		printf("\n");
 
@@ -541,8 +541,8 @@ void* printSaveDataThread() {
 			}
 			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
 				for (int j = 0; j < EMG_READ_SZ; j++) {
-					printf("%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
-					fprintf(data.outFile, "%f\t", data.EMG.read[i * EMG_READ_SZ + j]);
+					printf("%i\t", data.EMG.read[i * EMG_READ_SZ + j]);
+					fprintf(data.outFile, "%i\t", data.EMG.read[i * EMG_READ_SZ + j]);
 				}
 				printf("\n");
 				fprintf(data.outFile, "\n");
