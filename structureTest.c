@@ -502,7 +502,7 @@ void* printSaveDataThread() {
 			printf("*");
 		}
 		//save IMU data
-		for (int i = 0; i < IMU_READ_SZ; i++) {
+		for (int i = 0; i < QUICKDEVICE_READ_SZ; i++) {
 			printf("%i\t", data.IMU.read[i]);
 			fprintf(data.outFile, "%i\t", data.IMU.read[i]);
 		}
@@ -514,7 +514,7 @@ void* printSaveDataThread() {
 			//this sensor had a missed read, mark it with an asterisk
 			printf("*");
 		}
-		for (int i = 0; i < WIRED_CYGL_READ_SZ; i++) {
+		for (int i = 0; i < QUICKDEVICE_READ_SZ; i++) {
 			printf("%i\t", (int) data.CyGl.read[i]);
 			fprintf(data.outFile, "%i\t", (int) data.CyGl.read[i]);
 		}
@@ -527,7 +527,7 @@ void* printSaveDataThread() {
 			printf("*");
 		}
 		//save force data
-		for (int i = 0; i < FORCE_READ_SZ; i++) {
+		for (int i = 0; i < QUICKDEVICE_READ_SZ; i++) {
 			printf("%i\t", data.Force.read[i]);
 			fprintf(data.outFile, "%i\t", data.Force.read[i]);
 		}
@@ -539,8 +539,8 @@ void* printSaveDataThread() {
 				//this sensor had a missed read, mark it with an asterisk
 				printf("*");
 			}
-			for (int i = 0; i < EMG_READS_PER_CYCLE; i++) {
-				for (int j = 0; j < EMG_READ_SZ; j++) {
+			for (int i = 0; i < SLOWDEVICE_READS_PER_CYCLE; i++) {
+				for (int j = 0; j < SLOWDEVICE_READ_SZ; j++) {
 					printf("%i\t", data.EMG.read[i * EMG_READ_SZ + j]);
 					fprintf(data.outFile, "%i\t", data.EMG.read[i * EMG_READ_SZ + j]);
 				}
@@ -560,7 +560,7 @@ void* printSaveDataThread() {
 		if ((int) data.time % 60 == 0) {
 			fclose(data.outFile);
 			data.outFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackData.txt", "a");
-			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a")
+			data.EMGFile = fopen("/home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt", "a");
 		}
 	}
 
