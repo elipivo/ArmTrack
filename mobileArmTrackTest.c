@@ -715,8 +715,14 @@ void endSession() {
 
 	//upload files to DropBox (hold green and red LED on during upload)
 	digitalWrite(GREEN_LED, 1); digitalWrite(RED_LED, 1);
-	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.txt /");
-	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt /");
+
+	//zip files
+	system("zip /home/pi/Desktop/ArmTrack/ArmTrackData.zip /home/pi/Desktop/ArmTrack/ArmTrackData.txt");
+	system("zip /home/pi/Desktop/ArmTrack/ArmTrackEMGData.zip /home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt");
+
+	//upload zipped files
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.zip /");
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackEMGData.zip /");
 	digitalWrite(GREEN_LED, 0); digitalWrite(RED_LED, 0);
 	sleep(1);
 

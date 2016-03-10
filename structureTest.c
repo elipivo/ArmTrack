@@ -584,8 +584,13 @@ void endSession() {
 
 	//upload file to DropBox (hold green and red LED on during upload)
 	fprintf(stderr, "Uploading to dropbox...\t");
-	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.txt /");
-	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt /");
+	//zip files
+	system("zip /home/pi/Desktop/ArmTrack/ArmTrackData.zip /home/pi/Desktop/ArmTrack/ArmTrackData.txt");
+	system("zip /home/pi/Desktop/ArmTrack/ArmTrackEMGData.zip /home/pi/Desktop/ArmTrack/ArmTrackEMGData.txt");
+
+	//upload zipped files
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackData.zip /");
+	system("/home/pi/Dropbox-Uploader/dropbox_uploader.sh upload /home/pi/Desktop/ArmTrack/ArmTrackEMGData.zip /");
 	fprintf(stderr, "done.\n");
 
 	//report Error percentage
