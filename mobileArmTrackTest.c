@@ -681,6 +681,7 @@ void* printSaveDataThread() {
 			printf("EMG UNUSED");
 		}
 		printf("\n");
+		fprintf(data.outFile, "\n");
 
 		pthread_mutex_unlock(&threadLocks[4]);
 
