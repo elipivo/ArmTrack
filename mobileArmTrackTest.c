@@ -84,13 +84,14 @@ typedef struct {
 	 * 2: Force Control
 	 * 3: EMG Control
 	 * 4: Print Control
+	 * 5: Special EMG Thread Control (0 -> thread stop, 1 -> thread go)
 	 *
 	 * Value Meanings:
 	 * 0: Handling a read or print request.
 	 * 1: Get a read or trigger print.
 	 * 2: Ready to accept a read or print request.
 	 */
-	int controlValues[5];
+	int controlValues[6];
 	FILE* EMGFile; //holds just EMG data
 	FILE* outFile; //holds time stamped IMU, CyGl, Force sensor info
 } Data;
@@ -334,6 +335,9 @@ void startThreads() {
 			exit(1);
 		}
 	}
+
+	data.controlValues[5] = 0; //stop EMG
+
 	if (data.EMG.id != -1) {
 
 		pthread_mutex_init(&threadLocks[3], NULL);
@@ -354,6 +358,8 @@ void startThreads() {
 
 	//ensure threads are ready
 	usleep(30000);
+
+	data.controlValues[5] = 1; //start EMG
 }
 
 void getData() {
@@ -452,9 +458,13 @@ void* EMGThread() {
 	setPriority(95);
 
 	while (1 == 1) {
-		//collect data
-		getEMGData(&data.EMG, data.time);
-		data.controlValues[3] = 2;
+
+		if (data.controlValues == 1) {
+			//collect data
+			getEMGData(&data.EMG, data.time);
+			data.controlValues[3] = 2;
+		}
+
 	}
 }
 
@@ -463,6 +473,8 @@ void checkSensors() {
 	if (data.IMU.id != -1 && data.IMU.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the IMU
+
+		data.controlValues[5] = 0; //stop EMG
 
 		//turn on red LED
 		digitalWrite(GREEN_LED, 0);
@@ -473,16 +485,25 @@ void checkSensors() {
 		if (restartIMU(&data.IMU) != 1) {
 			//couldn't reconnect, continue without IMU
 			fprintf(stderr, "ERROR: Couldn't reconnect to IMU.\n");
+
+			pthread_cancel(threads[0]);
+			pthread_mutex_destroy(&threadLocks[0]);
+			pthread_cond_destroy(&threadSignals[0]);
 			closeIMU(&data.IMU);
+
 		} else {
 			fprintf(stderr, "ERROR: Successfully reconnected to IMU.\n");
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
+
+		data.controlValues[5] = 1; //resume EMG
 	}
 
 	if (data.CyGl.id != -1 && data.CyGl.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the CyberGlove
+
+		data.controlValues[5] = 0; //stop EMG
 
 		//turn on red LED
 		digitalWrite(GREEN_LED, 0);
@@ -493,16 +514,26 @@ void checkSensors() {
 		if (restartCyGl(&data.CyGl) != 1) {
 			//couldn't reconnect, continue without CyberGlove
 			fprintf(stderr, "ERROR: Couldn't reconnect to CyberGlove.\n");
+
+			pthread_cancel(threads[1]);
+			pthread_mutex_destroy(&threadLocks[1]);
+			pthread_cond_destroy(&threadSignals[1]);
+
 			closeCyGl(&data.CyGl);
+
 		} else {
 			fprintf(stderr, "ERROR: Successfully reconnected to CyberGlove.\n");
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
+
+		data.controlValues[5] = 1; //resume EMG
 	}
 
 	if (data.Force.id != -1 && data.Force.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the Force sensors
+
+		data.controlValues[5] = 0; //stop EMG
 
 		//turn on red LED
 		digitalWrite(GREEN_LED, 0);
@@ -511,18 +542,27 @@ void checkSensors() {
 		fprintf(stderr, "ERROR: Trying to reconnect to Force sensors.\n");
 
 		if (restartForce(&data.Force) != 1) {
-			//couldn't reconnect, just end the program here
+			//couldn't reconnect, just close Force sensor and end its thread
 			fprintf(stderr, "ERROR: Couldn't reconnect to Force sensors.\n");
+
+			pthread_cancel(threads[2]);
+			pthread_mutex_destroy(&threadLocks[2]);
+			pthread_cond_destroy(&threadSignals[2]);
+
 			closeForce(&data.Force);
 		} else {
 			fprintf(stderr, "ERROR: Successfully reconnected to Force sensors.\n");
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
+
+		data.controlValues[5] = 1; //resume EMG
 	}
 
 	if (data.EMG.id != -1 && data.EMG.consecutiveErrors > 20) {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the EMG
+
+		data.controlValues[5] = 0; //stop EMG
 
 		//turn on red LED
 		digitalWrite(GREEN_LED, 0);
@@ -533,9 +573,16 @@ void checkSensors() {
 		if (restartEMG(&data.EMG) != 1) {
 			//couldn't reconnect, just end the program here
 			fprintf(stderr, "ERROR: Couldn't reconnect to EMG.\n");
+
+			pthread_cancel(threads[3]);
+			pthread_mutex_destroy(&threadLocks[3]);
+			pthread_cond_destroy(&threadSignals[3]);
+
 			closeEMG(&data.EMG);
 		} else {
 			fprintf(stderr, "ERROR: Successfully reconnected to EMG.\n");
+
+			data.controlValues[5] = 1; //start EMG
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
 	}
@@ -689,7 +736,7 @@ void* printSaveDataThread() {
 
 void endSession() {
 
-	data.controlValues[3] = 0; //stop EMG data collection
+	data.controlValues[5] = 0; //stop EMG data collection
 	while (data.controlValues[4] != 2) {}; //wait for print thread to be done
 
 	for (int i = 0; i < 5; i++) {
