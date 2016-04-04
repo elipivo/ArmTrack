@@ -90,12 +90,11 @@ int main(void) {
 
 	data.readsSinceEMG = 0;
 
-//	setPriority();
+	setPriority(90);
 
 	fprintf(stderr, "Connecting to sensors.\n");
 
 	startSensors();
-	printf("Here 3");
 
 	//start data collection and print threads, initialize necessary mutex's
 	startThreads();
@@ -239,8 +238,6 @@ void startThreads() {
 		pthread_mutex_init(&threadLocks[3], NULL);
 		pthread_cond_init(&threadSignals[3], NULL);
 
-		data.controlValues[3] = 0; //stop EMG
-
 		if (pthread_create(&threads[3], NULL, EMGThread, NULL) != 0) {
 			fprintf(stderr, "ERROR: Couldn't start EMG data collection thread.\n");
 			exit(1);
@@ -256,8 +253,6 @@ void startThreads() {
 
 	//ensure threads are ready
 	usleep(30000);
-
-	data.controlValues[3] = 1; //start EMG
 }
 
 void getData() {
@@ -353,11 +348,9 @@ void* EMGThread() {
 	setPriority(95);
 
 	while (1 == 1) {
-		if (data.controlValues[3] != 0) {
-			//collect data
-			getSlowDeviceData(&data.EMG, data.time);
-			data.controlValues[3] = 2;
-		}
+		//collect data
+		getSlowDeviceData(&data.EMG, data.time);
+		data.controlValues[3] = 2;
 	}
 }
 
@@ -409,9 +402,6 @@ void checkSensors() {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the EMG
 
-		//stop EMG data collection
-		data.controlValues[3] = 0;
-
 		fprintf(stderr, "ERROR: Too many consecutive missed reads.\n");
 		fprintf(stderr, "ERROR: Trying to reconnect to EMG.\n");
 		if (restartSlowDevice(&data.EMG) != 1) {
@@ -419,8 +409,6 @@ void checkSensors() {
 			fprintf(stderr, "ERROR: Couldn't reconnect to EMG.\n");
 			closeSlowDevice(&data.EMG);
 		} else {
-			//restart EMG data collection
-			data.controlValues[3] = 1;
 			fprintf(stderr, "ERROR: Successfully reconnected to EMG.\n");
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
