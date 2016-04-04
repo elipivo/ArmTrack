@@ -338,8 +338,6 @@ void startThreads() {
 		pthread_mutex_init(&threadLocks[3], NULL);
 		pthread_cond_init(&threadSignals[3], NULL);
 
-		data.controlValues[3] = 0; //stop EMG
-
 		if (pthread_create(&threads[3], NULL, EMGThread, NULL) != 0) {
 			fprintf(stderr, "ERROR: Couldn't start EMG data collection thread.\n");
 			exit(1);
@@ -355,8 +353,6 @@ void startThreads() {
 
 	//ensure threads are ready
 	usleep(30000);
-
-	data.controlValues[3] = 1; //start EMG
 }
 
 void getData() {
@@ -399,7 +395,6 @@ void getData() {
 	if (data.EMG.id != -1 && data.readsSinceEMG == 8) {
 		//once every 8 reads, it will wait for new EMG data
 		while (data.controlValues[3] != 2) {}
-		data.controlValues[3] = 1;
 		data.readsSinceEMG = 0;
 	}
 
@@ -456,11 +451,9 @@ void* EMGThread() {
 	setPriority(95);
 
 	while (1 == 1) {
-		if (data.controlValues[3] != 0) {
-			//collect data
-			getEMGData(&data.EMG, data.time);
-			data.controlValues[3] = 2;
-		}
+		//collect data
+		getEMGData(&data.EMG, data.time);
+		data.controlValues[3] = 2;
 	}
 }
 
@@ -530,9 +523,6 @@ void checkSensors() {
 		//.5 sec of missed data
 		//big error happening, try to reconnect to the EMG
 
-		//stop EMG data collection
-		data.controlValues[3] = 0;
-
 		//turn on red LED
 		digitalWrite(GREEN_LED, 0);
 		digitalWrite(RED_LED, 1);
@@ -544,8 +534,6 @@ void checkSensors() {
 			fprintf(stderr, "ERROR: Couldn't reconnect to EMG.\n");
 			closeEMG(&data.EMG);
 		} else {
-			//restart EMG data collection
-			data.controlValues[3] = 1;
 			fprintf(stderr, "ERROR: Successfully reconnected to EMG.\n");
 		}
 		fprintf(stderr, "ERROR: Continuing data recording.\n");
