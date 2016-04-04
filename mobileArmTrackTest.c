@@ -128,6 +128,7 @@ int main(void) {
 	if (wiringPiSetup() != 0) {
 		exit(0);
 	}
+
 	pinMode(GREEN_LED, OUTPUT);
 	pinMode(RED_LED, OUTPUT);
 	pinMode(SWITCH, INPUT);
@@ -194,7 +195,7 @@ int main(void) {
 		//wait for 25ms cycle length
 		do {
 			gettimeofday(&temp, NULL);
-		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024993);
+		} while ( (temp.tv_sec - curr.tv_sec) + (temp.tv_usec - curr.tv_usec) * .000001 < .024998);
 
 		//for testing and not locking up pi
 		if (data.time > 420) {
